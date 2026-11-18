@@ -1,6 +1,13 @@
 
 export default {
   editor: {
+    temp_5: "Sonde de température 5",
+    balancer_status: "État équilibreur (capteur texte)",
+    balance_current: "Courant d'équilibrage",
+    charger: "Chargeur branché (capteur binaire)",
+    precharge: "Précharge (capteur binaire)",
+    heating_current: "Courant de chauffage",
+    battery_type: "Type de batterie (capteur texte)",
     title: "Titre de la carte",
     main_sensors: "Capteurs principaux",
     soc: "SoC (État de charge %)",
@@ -65,6 +72,24 @@ export default {
   },
 
   card: {
+    charger: "Chargeur",
+    precharge: "Précharge",
+    balancer: "Équilibreur",
+    yes: "Oui",
+    no: "Non",
+    bal_off: "Arrêt",
+    bal_charge: "Équilibrage en charge",
+    bal_discharge: "Équilibrage en décharge",
+    battery_type: "Type de batterie",
+    heating_current: "Courant de chauffage",
+    balance_current: "Courant d'équilibrage",
+    prot_emergency: "Urgence",
+    prot_discharge_ocp: "Surintensité décharge",
+    prot_discharge_scp: "Court-circuit décharge",
+    prot_charge_ocp: "Surintensité charge",
+    prot_charge_scp: "Court-circuit charge",
+    prot_uv: "Sous-tension",
+    prot_ov: "Surtension",
     default_title: "Cellules de batterie",
     power: "Puissance",
     soc: "SoC",

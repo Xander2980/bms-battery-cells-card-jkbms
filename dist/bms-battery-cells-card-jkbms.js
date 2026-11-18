@@ -1,5 +1,12 @@
 var de = {
     editor: {
+        temp_5: "Temperaturfühler 5",
+        balancer_status: "Balancer-Status (Text-Sensor)",
+        balance_current: "Balancer-Strom",
+        charger: "Ladegerät angesteckt (Binary Sensor)",
+        precharge: "Vorladung (Binary Sensor)",
+        heating_current: "Heizstrom",
+        battery_type: "Batterietyp (Text-Sensor)",
         jk_section: "JK-BMS (Add-on jkbms-rs485)",
         jk_prefix: "JK-BMS Präfix (z. B. bms_master, bms_1)",
         jk_prefix_hint: "Mit Präfix werden Zellen, Widerstände und alle Sensoren automatisch gesetzt. Selbst eingetragene Werte haben Vorrang.",
@@ -76,6 +83,24 @@ var de = {
         val_off: "Wert für OFF (z.B. 'Aus' oder 'False')"
     },
     card: {
+        charger: "Ladegerät",
+        precharge: "Vorladung",
+        balancer: "Balancer",
+        yes: "Ja",
+        no: "Nein",
+        bal_off: "Aus",
+        bal_charge: "Lade-Balancer",
+        bal_discharge: "Entlade-Balancer",
+        battery_type: "Batterietyp",
+        heating_current: "Heizstrom",
+        balance_current: "Balancer-Strom",
+        prot_emergency: "Notfall",
+        prot_discharge_ocp: "Entlade-Überstrom",
+        prot_discharge_scp: "Entlade-Kurzschluss",
+        prot_charge_ocp: "Lade-Überstrom",
+        prot_charge_scp: "Lade-Kurzschluss",
+        prot_uv: "Unterspannung",
+        prot_ov: "Überspannung",
         alarm: "Alarm",
         no_alarm: "Keine Alarme",
         charge_phase: "Ladephase",
@@ -119,6 +144,13 @@ var de = {
 
 var en = {
     editor: {
+        temp_5: "Temperature sensor 5",
+        balancer_status: "Balancer status (text sensor)",
+        balance_current: "Balance current",
+        charger: "Charger plugged in (binary sensor)",
+        precharge: "Precharge (binary sensor)",
+        heating_current: "Heating current",
+        battery_type: "Battery type (text sensor)",
         jk_section: "JK-BMS (jkbms-rs485 add-on)",
         jk_prefix: "JK-BMS prefix (e.g. bms_master, bms_1)",
         jk_prefix_hint: "With a prefix, cells, resistances and all sensors are set automatically. Values you enter yourself take precedence.",
@@ -195,6 +227,24 @@ var en = {
         val_off: "Value for OFF (e.g. 'OFF' or 'False')"
     },
     card: {
+        charger: "Charger",
+        precharge: "Precharge",
+        balancer: "Balancer",
+        yes: "Yes",
+        no: "No",
+        bal_off: "Off",
+        bal_charge: "Charging balancer",
+        bal_discharge: "Discharging balancer",
+        battery_type: "Battery type",
+        heating_current: "Heating current",
+        balance_current: "Balance current",
+        prot_emergency: "Emergency",
+        prot_discharge_ocp: "Discharge overcurrent",
+        prot_discharge_scp: "Discharge short circuit",
+        prot_charge_ocp: "Charge overcurrent",
+        prot_charge_scp: "Charge short circuit",
+        prot_uv: "Undervoltage",
+        prot_ov: "Overvoltage",
         alarm: "Alarm",
         no_alarm: "No alarms",
         charge_phase: "Charge phase",
@@ -238,6 +288,13 @@ var en = {
 
 var fr = {
   editor: {
+    temp_5: "Sonde de température 5",
+    balancer_status: "État équilibreur (capteur texte)",
+    balance_current: "Courant d'équilibrage",
+    charger: "Chargeur branché (capteur binaire)",
+    precharge: "Précharge (capteur binaire)",
+    heating_current: "Courant de chauffage",
+    battery_type: "Type de batterie (capteur texte)",
     title: "Titre de la carte",
     main_sensors: "Capteurs principaux",
     soc: "SoC (État de charge %)",
@@ -302,6 +359,24 @@ var fr = {
   },
 
   card: {
+    charger: "Chargeur",
+    precharge: "Précharge",
+    balancer: "Équilibreur",
+    yes: "Oui",
+    no: "Non",
+    bal_off: "Arrêt",
+    bal_charge: "Équilibrage en charge",
+    bal_discharge: "Équilibrage en décharge",
+    battery_type: "Type de batterie",
+    heating_current: "Courant de chauffage",
+    balance_current: "Courant d'équilibrage",
+    prot_emergency: "Urgence",
+    prot_discharge_ocp: "Surintensité décharge",
+    prot_discharge_scp: "Court-circuit décharge",
+    prot_charge_ocp: "Surintensité charge",
+    prot_charge_scp: "Court-circuit charge",
+    prot_uv: "Sous-tension",
+    prot_ov: "Surtension",
     default_title: "Cellules de batterie",
     power: "Puissance",
     soc: "SoC",
@@ -476,19 +551,22 @@ const css = LitElement.prototype.css;
 // JK-BMS-Fork: eigener Elementname, damit die Original-Karte parallel installiert bleiben kann
 const CARD_TAG = "bms-battery-cells-card-jkbms";
 const EDITOR_TAG = "bms-battery-cells-card-jkbms-editor";
-const CARD_VERSION = "v_2.0-jk.2";
+const CARD_VERSION = "v_2.1-jk.1";
 
-// Entitäten-Schema des JK-BMS-RS485-Add-ons (jean-luc1203/jkbms-rs485-addon), Präfix z. B. "bms_master"
-// "{p}" = Präfix. Selbst konfigurierte Werte haben immer Vorrang.
+// Entitäten-Schema des JK-BMS-RS485-Add-ons (Fork Xander2980/jkbms-rs485-addon ab 4.2, Original jean-luc1203),
+// Präfix z. B. "bms_master". "{p}" = Präfix. Selbst konfigurierte Werte haben immer Vorrang.
+// Ein Array = Kandidaten in dieser Reihenfolge (erster vorhandener gewinnt).
 const JK_MAP = {
   soc_entity: "sensor.{p}_bms_soc_pourcentage",
-  watt_entity: "sensor.{p}_bms_puissance_totale",
+  // Fork 4.2: Leistung mit Vorzeichen (+ Laden / − Entladen); sonst die alte Leistung ohne Vorzeichen
+  watt_entity: ["sensor.{p}_bms_battery_power", "sensor.{p}_bms_puissance_totale"],
   total_voltage_entity: "sensor.{p}_bms_tension_totale_volt",
   total_current_entity: "sensor.{p}_bms_courant_total",
   temp_entity: "sensor.{p}_bms_sonde_1_temp",
   temp_2_entity: "sensor.{p}_bms_sonde_2_temp",
   temp_3_entity: "sensor.{p}_bms_sonde_3_temp",
   temp_4_entity: "sensor.{p}_bms_sonde_4_temp",
+  temp_5_entity: "sensor.{p}_bms_temp_sensor_5",
   temp_mos_entity: "sensor.{p}_bms_mos_temp",
   soh_entity: "sensor.{p}_bms_soh_pourcentage",
   capacity_entity: "sensor.{p}_bms_capacite_batterie_ah",
@@ -504,7 +582,33 @@ const JK_MAP = {
   stat_charge_entity: "binary_sensor.{p}_bms_switch_charge",
   stat_discharge_entity: "binary_sensor.{p}_bms_switch_decharge",
   stat_balance_entity: "binary_sensor.{p}_bms_balance_action",
+  stat_heater_entity: "binary_sensor.{p}_bms_heating",
+  // Fork 4.2: zusätzliche Werte
+  balancer_status_entity: "sensor.{p}_bms_balancer_status_text",
+  balance_current_entity: "sensor.{p}_bms_balance_courant",
+  charger_entity: "binary_sensor.{p}_bms_charger_plugged",
+  precharge_entity: "binary_sensor.{p}_bms_precharging",
+  heating_current_entity: "sensor.{p}_bms_heating_current",
+  battery_type_entity: "sensor.{p}_bms_battery_type_text",
+  emergency_entity: "sensor.{p}_bms_emergency_countdown",
+  prot_discharge_ocp_entity: "sensor.{p}_bms_discharge_ocp_release_timer",
+  prot_discharge_scp_entity: "sensor.{p}_bms_discharge_scp_release_timer",
+  prot_charge_ocp_entity: "sensor.{p}_bms_charge_ocp_release_timer",
+  prot_charge_scp_entity: "sensor.{p}_bms_charge_scp_release_timer",
+  prot_uv_entity: "sensor.{p}_bms_undervoltage_release_timer",
+  prot_ov_entity: "sensor.{p}_bms_overvoltage_release_timer",
 };
+// Schutz-Freigabe-Timer: läuft einer (> 0 s), ist eine Schutzabschaltung aktiv
+const JK_PROT = [
+  ['emergency_entity', 'card.prot_emergency'],
+  ['prot_discharge_ocp_entity', 'card.prot_discharge_ocp'],
+  ['prot_discharge_scp_entity', 'card.prot_discharge_scp'],
+  ['prot_charge_ocp_entity', 'card.prot_charge_ocp'],
+  ['prot_charge_scp_entity', 'card.prot_charge_scp'],
+  ['prot_uv_entity', 'card.prot_uv'],
+  ['prot_ov_entity', 'card.prot_ov'],
+];
+const JK_TEMPS = ['temp_entity', 'temp_2_entity', 'temp_3_entity', 'temp_4_entity', 'temp_5_entity'];
 const JK_CELL = "sensor.{p}_bms_cell_{i}_volt";
 const JK_CELL_RES = "sensor.{p}_bms_cell_{i}_ohm";
 const JK_MAX_CELLS = 32;
@@ -794,6 +898,13 @@ class BmsBatteryCellsCardEditor extends LitElement {
           ${this._renderEntitySelector('editor.temp_2', 'temp_2_entity', sensorSelector)}
           ${this._renderEntitySelector('editor.temp_3', 'temp_3_entity', sensorSelector)}
           ${this._renderEntitySelector('editor.temp_4', 'temp_4_entity', sensorSelector)}
+          ${this._renderEntitySelector('editor.temp_5', 'temp_5_entity', sensorSelector)}
+          ${this._renderEntitySelector('editor.balancer_status', 'balancer_status_entity', sensorSelector)}
+          ${this._renderEntitySelector('editor.balance_current', 'balance_current_entity', sensorSelector)}
+          ${this._renderEntitySelector('editor.charger', 'charger_entity', binarySelector)}
+          ${this._renderEntitySelector('editor.precharge', 'precharge_entity', binarySelector)}
+          ${this._renderEntitySelector('editor.heating_current', 'heating_current_entity', sensorSelector)}
+          ${this._renderEntitySelector('editor.battery_type', 'battery_type_entity', sensorSelector)}
           ${this._renderEntitySelector('editor.throughput', 'throughput_entity', sensorSelector)}
           ${this._renderEntitySelector('editor.runtime', 'runtime_entity', sensorSelector)}
         </div>
@@ -970,8 +1081,8 @@ class BmsBatteryCellsCard extends HTMLElement {
         const fill = (tpl) => tpl.split('{p}').join(p);
         Object.entries(JK_MAP).forEach(([key, tpl]) => {
             if (raw[key]) return;                // selbst eingetragen -> Vorrang
-            const id = fill(tpl);
-            if (states[id]) this._config[key] = id;
+            const id = (Array.isArray(tpl) ? tpl : [tpl]).map(fill).find(x => states[x]);
+            if (id) this._config[key] = id;
         });
         if (!Array.isArray(raw.cells) || raw.cells.length === 0) {
             const cells = [];
@@ -988,7 +1099,7 @@ class BmsBatteryCellsCard extends HTMLElement {
 
     _jkInfoEnabled() {
         const c = this._config;
-        return c.show_jk_info !== false && !!(c.alarm_entity || c.alarm_list_entity || c.charge_status_entity || c.temp_2_entity || c.temp_3_entity || c.temp_4_entity);
+        return c.show_jk_info !== false && !!(c.alarm_entity || c.alarm_list_entity || c.charge_status_entity || c.temp_2_entity || c.temp_3_entity || c.temp_4_entity || c.temp_5_entity || c.charger_entity || c.balancer_status_entity);
     }
 
     set hass(hass) {
@@ -2040,7 +2151,7 @@ class BmsBatteryCellsCard extends HTMLElement {
     // --- JK-BMS: Alarmbanner, Ladephase, Temperaturfühler -----------------------------------------
     _renderJkBlockHtml() {
         const c = this._config;
-        const temps = ['temp_entity', 'temp_2_entity', 'temp_3_entity', 'temp_4_entity'].filter(k => c[k]);
+        const temps = JK_TEMPS.filter(k => c[k]);
         const phase = c.charge_status_entity ? `
             <div class="jk-pill jk-phase clickable" data-entity="${c.charge_status_entity}">
                 <span class="jk-lbl">${this._localize('card.charge_phase')}</span>
@@ -2056,7 +2167,23 @@ class BmsBatteryCellsCard extends HTMLElement {
                 <ha-icon id="jk-alarm-icon" icon="mdi:shield-check"></ha-icon><span class="jk-alarm-txt" id="jk-alarm-txt">--</span>
             </div>` : '';
         const tempsRow = temps.length ? `<div class="jk-temps" style="grid-template-columns: repeat(${temps.length}, 1fr);">${tempPills}</div>` : '';
-        return `${alarm}${phase}${tempsRow}`;
+        // Schutzabschaltung (nur sichtbar, wenn ein Freigabe-Timer läuft)
+        const prot = JK_PROT.some(([k]) => c[k]) ? `
+            <div class="jk-alarm bad clickable" id="jk-prot" style="display:none" data-entity="">
+                <ha-icon icon="mdi:timer-alert-outline"></ha-icon><span class="jk-alarm-txt" id="jk-prot-txt"></span>
+            </div>` : '';
+        // Ladegerät / Vorladung / Balancer-Status
+        const flagDefs = [
+            ['charger_entity', 'card.charger'],
+            ['precharge_entity', 'card.precharge'],
+            ['balancer_status_entity', 'card.balancer'],
+        ].filter(([k]) => c[k]);
+        const flags = flagDefs.length ? `<div class="jk-temps" style="grid-template-columns: repeat(${flagDefs.length}, 1fr);">${flagDefs.map(([k, l]) => `
+            <div class="jk-pill clickable" data-entity="${c[k]}">
+                <span class="jk-lbl">${this._localize(l)}</span>
+                <span class="jk-val" id="jk-${k}">--</span>
+            </div>`).join('')}</div>` : '';
+        return `${alarm}${prot}${phase}${flags}${tempsRow}`;
     }
 
     // Alarm aktiv? binary_sensor "on" oder eine Alarmliste, die nicht "No alarms"/leer ist
@@ -2091,7 +2218,33 @@ class BmsBatteryCellsCard extends HTMLElement {
             const lower = String(s || '').toLowerCase();
             ph.style.color = lower.includes('float') ? '#03a9f4' : (lower.includes('absorp') ? '#ffa726' : (lower.includes('bulk') ? '#43a047' : ''));
         }
-        ['temp_entity', 'temp_2_entity', 'temp_3_entity', 'temp_4_entity'].forEach(k => {
+        // Schutzabschaltung: laufende Freigabe-Timer anzeigen
+        const protBox = root.getElementById('jk-prot');
+        if (protBox) {
+            const active = JK_PROT.map(([k, l]) => [k, l, this._parseNumber(c[k])]).filter(([, , v]) => v !== null && v > 0);
+            protBox.style.display = active.length ? '' : 'none';
+            protBox.dataset.entity = active.length ? c[active[0][0]] : '';
+            const t = root.getElementById('jk-prot-txt');
+            if (t) t.innerText = active.map(([, l, v]) => `${this._localize(l)}: ${Math.round(v)} s`).join(' · ');
+        }
+        const onOff = (k) => {
+            const el = root.getElementById(`jk-${k}`);
+            if (!el || !c[k]) return;
+            const on = String(this._getState(c[k]) || '').toLowerCase() === 'on';
+            el.innerText = this._localize(on ? 'card.yes' : 'card.no');
+            el.style.color = on ? '#43a047' : '';
+        };
+        onOff('charger_entity');
+        onOff('precharge_entity');
+        const bs = root.getElementById('jk-balancer_status_entity');
+        if (bs && c.balancer_status_entity) {
+            const raw = String(this._getState(c.balancer_status_entity) || '');
+            const map = { 'off': 'card.bal_off', 'charging balancer': 'card.bal_charge', 'discharging balancer': 'card.bal_discharge' };
+            const key = map[raw.toLowerCase()];
+            bs.innerText = key ? this._localize(key) : (raw && !['unknown', 'unavailable'].includes(raw) ? raw : '--');
+            bs.style.color = key && key !== 'card.bal_off' ? '#ffa726' : '';
+        }
+        JK_TEMPS.forEach(k => {
             const el = root.getElementById(`jk-${k}`);
             if (!el || !c[k]) return;
             const v = this._parseNumber(c[k]);
@@ -2228,6 +2381,16 @@ class BmsBatteryCellsCard extends HTMLElement {
         leftList.push(`<div class="detail-item"><span class="detail-label">${this._localize('card.avg_cell')} :</span><span class="detail-val-txt">${avgVal}</span></div>`);
         
         addIfConf(leftList, 'temp_entity', 'editor.temp', '°C', true, 1);
+        if (c.battery_type_entity) {
+            const bt = this._getState(c.battery_type_entity);
+            leftList.push(`<div class="detail-item clickable" data-entity="${c.battery_type_entity}"><span class="detail-label">${this._localize('card.battery_type')} :</span><span class="detail-val-txt">${this._esc(bt && !['unknown','unavailable'].includes(bt) ? bt : '--')}</span></div>`);
+        }
+        // Heizstrom nur zeigen, wenn die Heizung läuft oder Strom fließt
+        if (c.heating_current_entity) {
+            const hc = this._parseNumber(c.heating_current_entity);
+            const heaterOn = String(this._getState(c.stat_heater_entity) || '').toLowerCase() === 'on';
+            if (heaterOn || (hc !== null && Math.abs(hc) > 0.01)) addIfConf(leftList, 'heating_current_entity', 'card.heating_current', 'A', false, 2);
+        }
         
         if (c.capacity_entity && c.soc_entity) {
             const cap = this._parseNumber(c.capacity_entity);
@@ -2252,6 +2415,7 @@ class BmsBatteryCellsCard extends HTMLElement {
         rightList.push(`<div class="${deltaClass}" data-entity="${deltaEnt}"><span class="detail-label">${this._localize('card.delta_cell_vol')} :</span><span class="detail-val-txt">${deltaStr}</span></div>`);
         
         addIfConf(rightList, 'temp_mos_entity', 'card.mos_temp', '°C', true, 1); // PR #13 (evilstan): 1 Nachkommastelle
+        addIfConf(rightList, 'balance_current_entity', 'card.balance_current', 'A', false, 3);
 
         const leftEl = this.shadowRoot.getElementById('d-list-left');
         const rightEl = this.shadowRoot.getElementById('d-list-right');
