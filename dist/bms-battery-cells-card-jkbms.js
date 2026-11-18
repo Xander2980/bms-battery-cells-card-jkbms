@@ -476,7 +476,7 @@ const css = LitElement.prototype.css;
 // JK-BMS-Fork: eigener Elementname, damit die Original-Karte parallel installiert bleiben kann
 const CARD_TAG = "bms-battery-cells-card-jkbms";
 const EDITOR_TAG = "bms-battery-cells-card-jkbms-editor";
-const CARD_VERSION = "v_2.0-jk.1";
+const CARD_VERSION = "v_2.0-jk.2";
 
 // Entitäten-Schema des JK-BMS-RS485-Add-ons (jean-luc1203/jkbms-rs485-addon), Präfix z. B. "bms_master"
 // "{p}" = Präfix. Selbst konfigurierte Werte haben immer Vorrang.
@@ -1383,16 +1383,18 @@ class BmsBatteryCellsCard extends HTMLElement {
             <style>
                 :host { display: block; --cell-gap: ${cell_gap}px; --badge-bg-color: rgba(0, 0, 0, 0.5); --val-display: ${valDisplay}; --name-fs: ${nameFontSize}; --name-pad: ${namePadding}; --bar-border-width: ${borderWidth}; --main-display: ${show_as_table || hide_bars ? 'none' : 'flex'}; --main-direction: ${horizontal_layout ? 'column' : 'row'}; --bar-transition: ${horizontal_layout ? 'width' : 'height'} 0.4s ease-out; --legend-direction: ${horizontal_layout ? 'row' : 'column'}; --legend-align: ${horizontal_layout ? 'space-between' : 'space-between'}; --legend-border: ${horizontal_layout ? 'none' : '1px solid rgba(255,255,255,0.1)'}; --legend-border-top: ${horizontal_layout ? '1px solid rgba(255,255,255,0.1)' : 'none'}; }
                 ha-card { display: flex; flex-direction: column; z-index: 0; height: ${(hide_bars || horizontal_layout || show_as_table) ? 'auto' : card_height + 'px'}; padding: ${Number.isFinite(Number(container_padding)) ? Number(container_padding) : 16}px; box-sizing: border-box; position: relative; color: ${colors.text}; overflow: hidden; }
-                .header.card-header { display: grid; grid-template-areas: "title stats" "subinfo stats"; grid-template-columns: 1fr auto; align-items: center; margin-bottom: 12px; flex-shrink: 0; padding-bottom: 8px; border-bottom: ${(hide_bars && !show_as_table) ? 'none' : '1px solid rgba(255,255,255,0.05)'}; }
+                .header.card-header { display: grid; grid-template-areas: "title stats" "subinfo stats"; grid-template-columns: auto minmax(0, 1fr); column-gap: 12px; align-items: center; margin-bottom: 12px; flex-shrink: 0; padding-bottom: 8px; border-bottom: ${(hide_bars && !show_as_table) ? 'none' : '1px solid rgba(255,255,255,0.05)'}; }
                 .title { grid-area: title; font-size: 1.3rem; font-weight: 500; letter-spacing: 0.5px; margin-top: -4px; }			
 				.sub-info-row { grid-area: subinfo; display: flex; gap: 12px; align-items: center; font-size: 1.125rem; color: var(--secondary-text-color); margin-top: 2px; }
 				.sub-info-item, .stat-item { cursor: pointer; transition: opacity 0.2s; }
 				.sub-info-item:hover, .stat-item:hover { opacity: 0.7; }
 				.sub-info-item { display: flex; align-items: center; gap: 4px; }
 				.sub-info-item ha-icon { --mdc-icon-size: 20px; color: var(--secondary-text-color); }
-                .stats { grid-area: stats; display: flex; gap: 16px; align-items: center; justify-content: flex-end; }
+                .stats { grid-area: stats; display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; justify-content: flex-end; min-width: 0; }
                 .stat-item { display: flex; flex-direction: column; align-items: flex-end; justify-content: center; }
-                .stat-value-row { display: flex; align-items: center; gap: 6px; font-size: 1.1rem; font-weight: 600; line-height: 1.2; }
+                .stat-value-row { display: flex; align-items: center; gap: 6px; font-size: 1.1rem; font-weight: 600; line-height: 1.2; white-space: nowrap; }
+                .stat-label { white-space: nowrap; }
+                .sub-info-row { flex-wrap: wrap; row-gap: 2px; }
                 .stat-value-row.vertical-layout { flex-direction: column-reverse; gap: 2px; align-items: center; }
                 .stat-label { font-size: 0.75rem; color: var(--secondary-text-color); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
                 .main-container.cells-container { flex: 1; display: var(--main-display); flex-direction: var(--main-direction); gap: var(--cell-gap); align-items: ${horizontal_layout ? 'stretch' : 'flex-end'}; position: relative; overflow: hidden; }
@@ -1401,7 +1403,7 @@ class BmsBatteryCellsCard extends HTMLElement {
                 .table-item { background: rgba(255,255,255,0.05); border-radius: 6px; padding: 6px 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid transparent; transition: all 0.2s; }
                 .table-item.min-cell { border-color: #2196f3; background: rgba(33, 150, 243, 0.15); }
                 .table-item.max-cell { border-color: #f44336; background: rgba(244, 67, 54, 0.15); }
-                .table-name { font-size: 0.75rem; opacity: 0.7; margin-bottom: 2px; } .table-val { font-size: 0.95rem; font-weight: bold; }
+                .table-name { font-size: 0.75rem; opacity: 0.7; margin-bottom: 2px; } .table-val { font-size: 0.95rem; font-weight: bold; white-space: nowrap; }
                 .cell-wrapper.cell-item { flex: 1; ${horizontal_layout ? 'height: 50px; min-height: 50px;' : 'height: 100%;'} width: 100%; position: relative; border-radius: 6px; overflow: visible; background: rgba(0,0,0,0.2); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; ${horizontal_layout ? 'display: flex; align-items: center; justify-content: flex-start;' : ''} }
                 .cell-wrapper.cell-item.min-cell { box-shadow: 0 0 8px rgba(33, 150, 243, 0.6) inset; border: 1px solid rgba(33, 150, 243, 0.5); }
                 .cell-wrapper.cell-item.max-cell { box-shadow: 0 0 8px rgba(244, 67, 54, 0.6) inset; border: 1px solid rgba(244, 67, 54, 0.5); }
@@ -1570,7 +1572,7 @@ class BmsBatteryCellsCard extends HTMLElement {
                     el.className = 'stat-item';
                     const wColor = (wattVal > 0) ? '#00e676' : '#2979ff';
                     const icon = (wattVal > 0) ? 'mdi:battery-charging' : 'mdi:lightning-bolt';
-                    const content = `<span class="stat-label">${this._localize('card.power')}</span><div class="${rowClass}" style="color: ${wColor}"><ha-icon icon="${icon}"></ha-icon><span>${wattVal.toFixed(2)} <span style="font-size:0.8em">W</span></span></div>`;
+                    const content = `<span class="stat-label">${this._localize('card.power')}</span><div class="${rowClass}" style="color: ${wColor}"><ha-icon icon="${icon}"></ha-icon><span>${Math.abs(wattVal) >= 100 ? Math.round(wattVal) : wattVal.toFixed(1)} <span style="font-size:0.8em">W</span></span></div>`;
                     if(el.innerHTML !== content) el.innerHTML = content;
                     el.onclick = (e) => { e.stopPropagation(); this._fireMoreInfo(watt_entity); };
                 });
@@ -1773,7 +1775,7 @@ class BmsBatteryCellsCard extends HTMLElement {
                 .table-item { background: rgba(255,255,255,0.05); border-radius: 6px; padding: 6px 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid transparent; transition: all 0.2s; }
                 .table-item.min-cell { border-color: #2196f3; background: rgba(33, 150, 243, 0.15); }
                 .table-item.max-cell { border-color: #f44336; background: rgba(244, 67, 54, 0.15); }
-                .table-name { font-size: 0.75rem; opacity: 0.7; margin-bottom: 2px; } .table-val { font-size: 0.95rem; font-weight: bold; }
+                .table-name { font-size: 0.75rem; opacity: 0.7; margin-bottom: 2px; } .table-val { font-size: 0.95rem; font-weight: bold; white-space: nowrap; }
                 .cell-wrapper.cell-item { flex: 1; ${horizontal_layout ? 'height: 50px; min-height: 50px;' : 'height: 100%;'} width: 100%; position: relative; border-radius: 6px; overflow: visible; background: rgba(0,0,0,0.2); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; ${horizontal_layout ? 'display: flex; align-items: center; justify-content: flex-start;' : ''} }
                 .cell-wrapper.cell-item.min-cell { box-shadow: 0 0 8px rgba(33, 150, 243, 0.6) inset; border: 1px solid rgba(33, 150, 243, 0.5); }
                 .cell-wrapper.cell-item.max-cell { box-shadow: 0 0 8px rgba(244, 67, 54, 0.6) inset; border: 1px solid rgba(244, 67, 54, 0.5); }
