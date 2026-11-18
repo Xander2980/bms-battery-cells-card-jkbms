@@ -83,6 +83,10 @@ export default {
         val_off: "Value for OFF (e.g. 'OFF' or 'False')"
     },
     card: {
+        unit_d: "d",
+        unit_h: "h",
+        unit_min: "min",
+        unit_s: "s",
         charger: "Charger",
         precharge: "Precharge",
         balancer: "Balancer",

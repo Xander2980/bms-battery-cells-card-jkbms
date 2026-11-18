@@ -83,6 +83,10 @@ var de = {
         val_off: "Wert für OFF (z.B. 'Aus' oder 'False')"
     },
     card: {
+        unit_d: "T",
+        unit_h: "Std.",
+        unit_min: "Min.",
+        unit_s: "s",
         charger: "Ladegerät",
         precharge: "Vorladung",
         balancer: "Balancer",
@@ -227,6 +231,10 @@ var en = {
         val_off: "Value for OFF (e.g. 'OFF' or 'False')"
     },
     card: {
+        unit_d: "d",
+        unit_h: "h",
+        unit_min: "min",
+        unit_s: "s",
         charger: "Charger",
         precharge: "Precharge",
         balancer: "Balancer",
@@ -359,6 +367,10 @@ var fr = {
   },
 
   card: {
+    unit_d: "j",
+    unit_h: "h",
+    unit_min: "min",
+    unit_s: "s",
     charger: "Chargeur",
     precharge: "Précharge",
     balancer: "Équilibreur",
@@ -551,7 +563,7 @@ const css = LitElement.prototype.css;
 // JK-BMS-Fork: eigener Elementname, damit die Original-Karte parallel installiert bleiben kann
 const CARD_TAG = "bms-battery-cells-card-jkbms";
 const EDITOR_TAG = "bms-battery-cells-card-jkbms-editor";
-const CARD_VERSION = "v_2.1-jk.1";
+const CARD_VERSION = "v_2.1-jk.2";
 
 // Entitäten-Schema des JK-BMS-RS485-Add-ons (Fork Xander2980/jkbms-rs485-addon ab 4.2, Original jean-luc1203),
 // Präfix z. B. "bms_master". "{p}" = Präfix. Selbst konfigurierte Werte haben immer Vorrang.
@@ -576,6 +588,9 @@ const JK_MAP = {
   runtime_entity: "sensor.{p}_bms_total_runtime_formatted",
   charge_status_entity: "sensor.{p}_bms_charge_status_text",
   charge_status_time_entity: "sensor.{p}_bms_charge_status_time_formatted",
+  // Rohwerte in Sekunden: daraus formatiert die Karte selbst lesbar ("2 Min. 44 s")
+  charge_status_seconds_entity: "sensor.{p}_bms_charge_status_time",
+  runtime_seconds_entity: "sensor.{p}_bms_total_runtime",
   alarm_entity: "binary_sensor.{p}_{p}_alarm_active",
   alarm_list_entity: "sensor.{p}_{p}_alarm_list",
   // Nur Anzeige (binary_sensor ist nicht schaltbar) – ein versehentlicher Klick schaltet das BMS nicht ab
@@ -2211,7 +2226,9 @@ class BmsBatteryCellsCard extends HTMLElement {
         const ph = root.getElementById('jk-phase');
         if (ph) {
             const s = this._getState(c.charge_status_entity);
-            const dur = c.charge_status_time_entity ? this._getState(c.charge_status_time_entity) : null;
+            const secs = c.charge_status_seconds_entity ? this._parseNumber(c.charge_status_seconds_entity) : null;
+            const dur = secs !== null ? (secs > 0 ? this._formatDuration(secs, true) : null)
+                : (c.charge_status_time_entity ? this._getState(c.charge_status_time_entity) : null);
             const valid = (v) => v && !['unknown', 'unavailable'].includes(v);
             const showDur = valid(dur) && !/^0\s*s?$/i.test(String(dur).trim());
             ph.innerText = valid(s) ? `${s}${showDur ? ' · ' + dur : ''}` : '--';
@@ -2253,6 +2270,22 @@ class BmsBatteryCellsCard extends HTMLElement {
             const tc = v !== null ? this._tempToCelsius(v, unit) : null;
             el.style.color = tc === null ? '' : (tc < 5 ? '#42a5f5' : (tc > 40 ? '#ef5350' : ''));
         });
+    }
+
+    // Sekunden lesbar und in der HA-Sprache, z. B. "2 Min. 44 s", "3 Std. 5 Min.", "12 T 4 Std."
+    _formatDuration(totalSeconds, withSeconds = true) {
+        if (totalSeconds === null || totalSeconds === undefined || isNaN(totalSeconds)) return null;
+        const u = (k) => this._localize(`card.unit_${k}`);
+        let sec = Math.max(0, Math.floor(totalSeconds));
+        const d = Math.floor(sec / 86400); sec %= 86400;
+        const h = Math.floor(sec / 3600); sec %= 3600;
+        const m = Math.floor(sec / 60); const s = sec % 60;
+        const parts = [];
+        if (d) parts.push(`${d} ${u('d')}`);
+        if (h || d) parts.push(`${h} ${u('h')}`);
+        if (!d) parts.push(`${m} ${u('min')}`);
+        if (withSeconds && !d && !h) parts.push(`${s} ${u('s')}`);
+        return parts.join(' ');
     }
 
     // Widerstand lesbar: Werte < 1 Ω als mΩ
@@ -2401,9 +2434,10 @@ class BmsBatteryCellsCard extends HTMLElement {
         }
         addIfConf(rightList, 'cycle_count_entity', 'card.cycle_count', '');
         addIfConf(leftList, 'throughput_entity', 'card.throughput', 'Ah', false, 0);
-        if (c.runtime_entity) {
-            const rt = this._getState(c.runtime_entity);
-            rightList.push(`<div class="detail-item clickable" data-entity="${c.runtime_entity}"><span class="detail-label">${this._localize('card.runtime')} :</span><span class="detail-val-txt">${this._esc(rt && !['unknown','unavailable'].includes(rt) ? rt : '--')}</span></div>`);
+        if (c.runtime_entity || c.runtime_seconds_entity) {
+            const rtSec = c.runtime_seconds_entity ? this._parseNumber(c.runtime_seconds_entity) : null;
+            const rt = rtSec !== null ? this._formatDuration(rtSec, false) : this._getState(c.runtime_entity);
+            rightList.push(`<div class="detail-item clickable" data-entity="${c.runtime_entity || c.runtime_seconds_entity}"><span class="detail-label">${this._localize('card.runtime')} :</span><span class="detail-val-txt">${this._esc(rt && !['unknown','unavailable'].includes(rt) ? rt : '--')}</span></div>`);
         }
         
         // Issue #5: delta always in mV (unit_of_measurement of the sensor, fallback: value < 1 = Volt)

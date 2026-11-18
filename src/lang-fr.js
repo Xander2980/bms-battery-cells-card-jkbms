@@ -72,6 +72,10 @@ export default {
   },
 
   card: {
+    unit_d: "j",
+    unit_h: "h",
+    unit_min: "min",
+    unit_s: "s",
     charger: "Chargeur",
     precharge: "Précharge",
     balancer: "Équilibreur",

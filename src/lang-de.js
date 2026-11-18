@@ -83,6 +83,10 @@ export default {
         val_off: "Wert für OFF (z.B. 'Aus' oder 'False')"
     },
     card: {
+        unit_d: "T",
+        unit_h: "Std.",
+        unit_min: "Min.",
+        unit_s: "s",
         charger: "Ladegerät",
         precharge: "Vorladung",
         balancer: "Balancer",
