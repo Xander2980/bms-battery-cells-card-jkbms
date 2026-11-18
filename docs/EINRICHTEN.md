@@ -101,6 +101,8 @@ Aufgeklappt sieht der Bereich so aus:
 
 <img width="60%" alt="BMS-Einstellungen aufgeklappt" src="jk-einstellungen-offen.png" />
 
+Im **Active-Polling-Modus** des Add-ons kommen zusätzlich RCV Time, RFV Time sowie LCD-Buzzer- und DRY-Werte dazu; im Broadcast-Modus stehen sie in der Hinweiszeile „Nur in der JK-App“. Aufbau der `.jkcfg`-Exportdatei: [JKCFG-FORMAT.md](JKCFG-FORMAT.md).
+
 Ganze Detailkarte mit aufgeklapptem Bereich:
 
 <img width="48%" alt="Detailkarte mit BMS-Einstellungen" src="jk-einstellungen.png" />

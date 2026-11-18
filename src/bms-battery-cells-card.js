@@ -86,6 +86,9 @@ const JK_SETTINGS = [
   ['bal', 'Start Balance Volt.', 'balance_starting_voltage', null, 3],
   ['bal', 'Balance Trig. Volt.', 'balance_trigger_voltage', null, 3],
   ['bal', 'Max Balance Cur.', 'max_balance_current', null, 1],
+  // nur im Active-Polling-Modus des Add-ons vorhanden (Geräteinfo-Block) – sonst ausgeblendet
+  ['bal', 'RCV Time', 'request_charge_voltage_time', null, 1, 'h'],
+  ['bal', 'RFV Time', 'request_float_voltage_time', null, 1, 'h'],
   ['cur', 'Max Charge Cur.', 'max_charge_current', null, 0],
   ['cur', 'Charge OCP Delay / OCPR', 'charge_overcurrent_protection_delay', 'charge_overcurrent_protection_recovery_time', 0],
   ['cur', 'Max Discharge Cur.', 'max_discharge_current', null, 0],
@@ -114,10 +117,17 @@ const JK_SETTINGS = [
   ['func', 'Discharge OCP 3', 'binary_sensor:discharge_ocp3', null, 'bool'],
   ['func', 'DRY ARM Intermittent', 'binary_sensor:dry_alarm_intermittent', null, 'bool'],
   ['func', 'Special Charger', 'binary_sensor:special_charger', null, 'bool'],
+  ['gen', 'LCD Buzzer Trigger', 'lcd_buzzer_trigger', null, 0],
+  ['gen', 'LCD Buzzer Trigger / Release Val', 'lcd_buzzer_trigger_value', 'lcd_buzzer_release_value', 0],
+  ['gen', 'DRY 1 Trigger', 'select:dry1_trigger_code', null, null],
+  ['gen', 'DRY 1 Trigger / Release Val', 'dry1_trigger_value', 'dry1_release_value', 0],
+  ['gen', 'DRY 2 Trigger', 'select:dry2_trigger_code', null, null],
+  ['gen', 'DRY 2 Trigger / Release Val', 'dry2_trigger_value', 'dry2_release_value', 0],
 ];
 const JK_SETTING_ID = '{d}.{p}_bms_{k}';
 // In der JK-App einstellbar, vom Add-on aber nicht nach Home Assistant übertragen
-const JK_APP_ONLY = ['RCV Time', 'Re-Bulk SOC', 'Calibrating Volt./Curr.', 'Emerg. Time', 'Data Stored Period', 'UART1–3 / CAN Protocol', 'LCD Buzzer', 'DRY 1 / DRY 2', 'Con. Wire Res.', 'GPS Locked CHG/DCH'];
+// [Name, Label eines JK_SETTINGS-Eintrags, der den Wert ersetzt, falls das Add-on ihn liefert]
+const JK_APP_ONLY = [['RCV / RFV Time', 'RCV Time'], ['Re-Bulk SOC', null], ['Calibrating Volt./Curr.', null], ['Emerg. Time', null], ['Data Stored Period', null], ['UART1–3 / CAN Protocol', null], ['LCD Buzzer', 'LCD Buzzer Trigger'], ['DRY 1 / DRY 2', 'DRY 1 Trigger'], ['Con. Wire Res.', null], ['GPS Locked CHG/DCH', null]];
 
 const JK_TEMPS = ['temp_entity', 'temp_2_entity', 'temp_3_entity', 'temp_4_entity', 'temp_5_entity'];
 const JK_CELL = "sensor.{p}_bms_cell_{i}_volt";
@@ -609,8 +619,8 @@ class BmsBatteryCellsCard extends HTMLElement {
         }
         // BMS-Einstellungen: nur die Einträge, deren Entität es gibt
         const sid = (k) => { if (!k) return null; const [d, n] = k.includes(':') ? k.split(':') : ['number', k]; return fill(JK_SETTING_ID).replace('{d}', d).replace('{k}', n); };
-        this._jkSettings = JK_SETTINGS.map(([group, label, k1, k2, dec], i) => ({
-            group, label, dec, idx: i,
+        this._jkSettings = JK_SETTINGS.map(([group, label, k1, k2, dec, unit], i) => ({
+            group, label, dec, unit, idx: i,
             a: states[sid(k1)] ? sid(k1) : null,
             b: k2 && states[sid(k2)] ? sid(k2) : null,
         })).filter(s => s.a);
@@ -632,7 +642,7 @@ class BmsBatteryCellsCard extends HTMLElement {
         return `<details class="box jk-settings" ${this._config.jk_settings_open ? 'open' : ''}>
             <summary><ha-icon icon="mdi:tune-vertical"></ha-icon><span>${this._localize('card.bms_settings')}</span><span class="jk-set-hint">${this._localize('card.bms_settings_hint')}</span></summary>
             <div class="jk-set-grid">${body}</div>
-            <div class="jk-set-apponly">${this._localize('card.set_app_only')}: ${JK_APP_ONLY.join(', ')}</div>
+            <div class="jk-set-apponly">${this._localize('card.set_app_only')}: ${JK_APP_ONLY.filter(([, lbl]) => !lbl || !this._jkSettings.some(s => s.label === lbl)).map(([n]) => n).join(', ')}</div>
         </details>`;
     }
 
@@ -653,7 +663,7 @@ class BmsBatteryCellsCard extends HTMLElement {
                 el.style.color = on ? '#43a047' : '';
                 return;
             }
-            const unit = this._getUnit(s.a);
+            const unit = this._getUnit(s.a) || s.unit || '';
             const txt = s.b ? `${fmt(s.a, s.dec)} / ${fmt(s.b, s.dec)}` : fmt(s.a, s.dec);
             const out = `${txt}${unit ? ' ' + unit : ''}`;
             if (el.innerText !== out) el.innerText = out;
