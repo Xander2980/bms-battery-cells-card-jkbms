@@ -12,7 +12,7 @@ const css = LitElement.prototype.css;
 // JK-BMS-Fork: eigener Elementname, damit die Original-Karte parallel installiert bleiben kann
 const CARD_TAG = "bms-battery-cells-card-jkbms";
 const EDITOR_TAG = "bms-battery-cells-card-jkbms-editor";
-const CARD_VERSION = "v_2.1-jk.2";
+const CARD_VERSION = "v_2.1-jk.3";
 
 // Entitäten-Schema des JK-BMS-RS485-Add-ons (Fork Xander2980/jkbms-rs485-addon ab 4.2, Original jean-luc1203),
 // Präfix z. B. "bms_master". "{p}" = Präfix. Selbst konfigurierte Werte haben immer Vorrang.
@@ -1475,6 +1475,15 @@ class BmsBatteryCellsCard extends HTMLElement {
                 .jk-pill .jk-val { font-size: 1.05rem; font-weight: 600; }
                 .jk-temps { display: grid; gap: 12px; }
                 .jk-phase { flex-direction: row; justify-content: center; gap: 10px; }
+                .jk-info { display: flex; flex-wrap: wrap; gap: 6px 8px; justify-content: center; align-items: center; }
+                .jk-chip { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 12px; font-size: 0.85rem; background: rgba(var(--rgb-primary-text-color), 0.05); cursor: pointer; }
+                .jk-chip ha-icon { --mdc-icon-size: 16px; }
+                .jk-chip .jk-lbl { font-size: 0.7rem; color: var(--secondary-text-color); text-transform: uppercase; letter-spacing: 0.4px; }
+                .jk-chip.warn { color: #ffa726; background: rgba(255,167,38,0.12); }
+                .jk-chip.ok { color: #43a047; background: rgba(67,160,71,0.12); }
+                .jk-temps .jk-pill { padding: 4px 6px; }
+                .jk-temps .jk-pill .jk-lbl { font-size: 0.65rem; }
+                .jk-temps .jk-pill .jk-val { font-size: 0.9rem; }
                 .cell-res.res-max { color: #ffa726; font-weight: 700; }
 
                 @media (max-width: 500px) { .col-3 { grid-template-columns: 1fr; } .cell-list-grid { grid-template-columns: 1fr; } }
@@ -1616,10 +1625,13 @@ class BmsBatteryCellsCard extends HTMLElement {
     _renderJkBlockHtml() {
         const c = this._config;
         const temps = JK_TEMPS.filter(k => c[k]);
-        const phase = c.charge_status_entity ? `
-            <div class="jk-pill jk-phase clickable" data-entity="${c.charge_status_entity}">
-                <span class="jk-lbl">${this._localize('card.charge_phase')}</span>
-                <span class="jk-val" id="jk-phase">--</span>
+        // Kompakte Info-Zeile: Ladephase + Hinweise (nur wenn aktiv). Leer -> ausgeblendet.
+        const phase = (c.charge_status_entity || c.charger_entity || c.precharge_entity || c.balancer_status_entity) ? `
+            <div class="jk-info" id="jk-info">
+                ${c.charge_status_entity ? `<span class="jk-chip clickable" id="jk-phase-chip" data-entity="${c.charge_status_entity}"><span class="jk-lbl">${this._localize('card.charge_phase')}</span> <b id="jk-phase">--</b></span>` : ''}
+                ${c.balancer_status_entity ? `<span class="jk-chip warn clickable" id="jk-chip-balancer" data-entity="${c.balancer_status_entity}"><ha-icon icon="mdi:scale-balance"></ha-icon><span id="jk-balancer-txt"></span></span>` : ''}
+                ${c.charger_entity ? `<span class="jk-chip ok clickable" id="jk-chip-charger" data-entity="${c.charger_entity}"><ha-icon icon="mdi:power-plug"></ha-icon>${this._localize('card.charger')}</span>` : ''}
+                ${c.precharge_entity ? `<span class="jk-chip ok clickable" id="jk-chip-precharge" data-entity="${c.precharge_entity}"><ha-icon icon="mdi:flash"></ha-icon>${this._localize('card.precharge')}</span>` : ''}
             </div>` : '';
         const tempPills = temps.map((k, i) => `
             <div class="jk-pill clickable" data-entity="${c[k]}">
@@ -1636,18 +1648,7 @@ class BmsBatteryCellsCard extends HTMLElement {
             <div class="jk-alarm bad clickable" id="jk-prot" style="display:none" data-entity="">
                 <ha-icon icon="mdi:timer-alert-outline"></ha-icon><span class="jk-alarm-txt" id="jk-prot-txt"></span>
             </div>` : '';
-        // Ladegerät / Vorladung / Balancer-Status
-        const flagDefs = [
-            ['charger_entity', 'card.charger'],
-            ['precharge_entity', 'card.precharge'],
-            ['balancer_status_entity', 'card.balancer'],
-        ].filter(([k]) => c[k]);
-        const flags = flagDefs.length ? `<div class="jk-temps" style="grid-template-columns: repeat(${flagDefs.length}, 1fr);">${flagDefs.map(([k, l]) => `
-            <div class="jk-pill clickable" data-entity="${c[k]}">
-                <span class="jk-lbl">${this._localize(l)}</span>
-                <span class="jk-val" id="jk-${k}">--</span>
-            </div>`).join('')}</div>` : '';
-        return `${alarm}${prot}${phase}${flags}${tempsRow}`;
+        return `${alarm}${prot}${phase}${tempsRow}`;
     }
 
     // Alarm aktiv? binary_sensor "on" oder eine Alarmliste, die nicht "No alarms"/leer ist
@@ -1663,6 +1664,7 @@ class BmsBatteryCellsCard extends HTMLElement {
     _updateJkBlock() {
         const c = this._config;
         const root = this.shadowRoot;
+        const show = (id, on) => { const el = root.getElementById(id); if (el) el.style.display = on ? '' : 'none'; };
         const box = root.getElementById('jk-alarm');
         if (box) {
             const { alarm, text } = this._jkAlarmState();
@@ -1681,6 +1683,8 @@ class BmsBatteryCellsCard extends HTMLElement {
             const valid = (v) => v && !['unknown', 'unavailable'].includes(v);
             const showDur = valid(dur) && !/^0\s*s?$/i.test(String(dur).trim());
             ph.innerText = valid(s) ? `${s}${showDur ? ' · ' + dur : ''}` : '--';
+            // Slave-BMS hinter einem Master führen keine eigene Ladephase (Zähler bleibt 0) -> ausblenden
+            show('jk-phase-chip', !(secs !== null && secs === 0) && valid(s));
             const lower = String(s || '').toLowerCase();
             ph.style.color = lower.includes('float') ? '#03a9f4' : (lower.includes('absorp') ? '#ffa726' : (lower.includes('bulk') ? '#43a047' : ''));
         }
@@ -1693,23 +1697,15 @@ class BmsBatteryCellsCard extends HTMLElement {
             const t = root.getElementById('jk-prot-txt');
             if (t) t.innerText = active.map(([, l, v]) => `${this._localize(l)}: ${Math.round(v)} s`).join(' · ');
         }
-        const onOff = (k) => {
-            const el = root.getElementById(`jk-${k}`);
-            if (!el || !c[k]) return;
-            const on = String(this._getState(c[k]) || '').toLowerCase() === 'on';
-            el.innerText = this._localize(on ? 'card.yes' : 'card.no');
-            el.style.color = on ? '#43a047' : '';
-        };
-        onOff('charger_entity');
-        onOff('precharge_entity');
-        const bs = root.getElementById('jk-balancer_status_entity');
-        if (bs && c.balancer_status_entity) {
-            const raw = String(this._getState(c.balancer_status_entity) || '');
-            const map = { 'off': 'card.bal_off', 'charging balancer': 'card.bal_charge', 'discharging balancer': 'card.bal_discharge' };
-            const key = map[raw.toLowerCase()];
-            bs.innerText = key ? this._localize(key) : (raw && !['unknown', 'unavailable'].includes(raw) ? raw : '--');
-            bs.style.color = key && key !== 'card.bal_off' ? '#ffa726' : '';
-        }
+        const isOn = (k) => !!c[k] && String(this._getState(c[k]) || '').toLowerCase() === 'on';
+        show('jk-chip-charger', isOn('charger_entity'));
+        show('jk-chip-precharge', isOn('precharge_entity'));
+        const balTxt = this._jkBalancerText();
+        show('jk-chip-balancer', !!balTxt);
+        const bt = root.getElementById('jk-balancer-txt');
+        if (bt) bt.innerText = balTxt || '';
+        const info = root.getElementById('jk-info');
+        if (info) info.style.display = [...info.children].some(ch => ch.style.display !== 'none') ? '' : 'none';
         JK_TEMPS.forEach(k => {
             const el = root.getElementById(`jk-${k}`);
             if (!el || !c[k]) return;
@@ -1719,6 +1715,15 @@ class BmsBatteryCellsCard extends HTMLElement {
             const tc = v !== null ? this._tempToCelsius(v, unit) : null;
             el.style.color = tc === null ? '' : (tc < 5 ? '#42a5f5' : (tc > 40 ? '#ef5350' : ''));
         });
+    }
+
+    // Balancer-Status als Text, null wenn aus/unbekannt
+    _jkBalancerText() {
+        const c = this._config;
+        if (!c.balancer_status_entity) return null;
+        const raw = String(this._getState(c.balancer_status_entity) || '').toLowerCase();
+        const map = { 'charging balancer': 'card.bal_charge', 'discharging balancer': 'card.bal_discharge' };
+        return map[raw] ? this._localize(map[raw]) : null;
     }
 
     // Sekunden lesbar und in der HA-Sprache, z. B. "2 Min. 44 s", "3 Std. 5 Min.", "12 T 4 Std."
@@ -1936,7 +1941,7 @@ class BmsBatteryCellsCard extends HTMLElement {
                 const parts = []; let color = 'var(--secondary-text-color)';
                 if (flow !== null && flow > 0)      { parts.push(this._localize('card.status_charging')); color = '#43a047'; }
                 else if (flow !== null && flow < 0) { parts.push(this._localize('card.status_discharging')); color = '#03a9f4'; }
-                if (balancing) { parts.push(this._localize('card.status_balancing')); if (flow === null) color = '#ffa726'; }
+                if (balancing) { parts.push(this._jkBalancerText() || this._localize('card.status_balancing')); if (flow === null) color = '#ffa726'; }
                 if (parts.length === 0) parts.push(this._localize('card.status_idle'));
                 statusEl.innerText = parts.join(' + ');
                 statusEl.style.color = color;
