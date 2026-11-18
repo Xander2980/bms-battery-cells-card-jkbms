@@ -1,6 +1,6 @@
 # Einrichten & Werte einstellen
 
-Anleitung für die **BMS Battery Cells Card (JK-BMS)** mit dem Add-on [jkbms-rs485-addon](https://github.com/jean-luc1203/jkbms-rs485-addon).
+Anleitung für die **BMS Battery Cells Card (JK-BMS)** mit dem Add-on [jkbms-rs485-addon (Fork Xander2980)](https://github.com/Xander2980/jkbms-rs485-addon) (ab 4.2; läuft auch mit dem Original von jean-luc1203).
 
 - [1. Installieren](#1-installieren)
 - [2. Karte zum Dashboard hinzufügen](#2-karte-zum-dashboard-hinzufügen)

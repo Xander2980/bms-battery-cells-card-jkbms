@@ -7,7 +7,7 @@
 
 # BMS Battery Cells Card – JK-BMS-Fork
 
-Fork der [BMS Battery Cells Card](https://github.com/jayjojayson/bms-battery-cells-card) von jayjojayson (Stand v_2.0), erweitert für das **JK-BMS** mit dem Add-on [jkbms-rs485-addon](https://github.com/jean-luc1203/jkbms-rs485-addon).
+Fork der [BMS Battery Cells Card](https://github.com/jayjojayson/bms-battery-cells-card) von jayjojayson (Stand v_2.0), erweitert für das **JK-BMS** mit dem Add-on [jkbms-rs485-addon (Fork Xander2980)](https://github.com/Xander2980/jkbms-rs485-addon) (ab 4.2; läuft auch mit dem Original von jean-luc1203).
 
 📖 **[Anleitung mit Bildern: Einrichten & Werte einstellen](docs/EINRICHTEN.md)**
 
@@ -20,12 +20,16 @@ Fork der [BMS Battery Cells Card](https://github.com/jayjojayson/bms-battery-cel
 | **Automatik per Präfix** | `jk_prefix: bms_master` (bzw. `bms_1`, `bms_2` …) setzt Zellen (Anzahl wird erkannt), Zellwiderstände und alle Sensoren automatisch. Selbst eingetragene Werte haben Vorrang. |
 | **Alarm-Banner** | Grün „Keine Alarme“ bzw. rot pulsierend mit Alarmtext (`alarm_entity`, `alarm_list_entity`). In der Standardansicht erscheint bei Alarm ein rotes Symbol im Kopf. |
 | **Ladephase** | Bulk / Absorption / Float mit Dauer (`charge_status_entity`, `charge_status_time_entity`). |
-| **Temperaturfühler 1–4** | `temp_entity`, `temp_2_entity`, `temp_3_entity`, `temp_4_entity` als eigene Zeile. |
+| **Temperaturfühler 1–5** | `temp_entity` … `temp_5_entity` als eigene Zeile. |
 | **Zellwiderstände** | Anzeige in mΩ, höchster Widerstand orange markiert. |
 | **Durchsatz & Laufzeit** | `throughput_entity` (Ah gesamt), `runtime_entity`. |
+| **Neue Werte (Add-on-Fork ab 4.2)** | Leistung mit Vorzeichen (Status Laden/Entladen stimmt), Temperaturfühler 5, Heizung, Ladegerät angesteckt, Vorladung, Balancer-Status (Lade-/Entlade-Balancer), Balancer-Strom, Heizstrom (nur wenn die Heizung läuft), Batterietyp. |
+| **Schutzabschaltung** | Rotes Banner, solange ein Freigabe-Timer läuft (Lade-/Entlade-Überstrom, Kurzschluss, Unter-/Überspannung, Notfall), mit Restzeit in s. |
 | **Sichere Status-Anzeige** | Mit Präfix zeigen Laden/Entladen/Balance die `binary_sensor`-Zustände – ein Klick schaltet das BMS **nicht** ab. Wer schalten will, trägt `stat_charge_entity` usw. selbst ein. |
 
-Neue Optionen: `jk_prefix`, `show_jk_info` (Standard `true`), `alarm_entity`, `alarm_list_entity`, `charge_status_entity`, `charge_status_time_entity`, `temp_2_entity`, `temp_3_entity`, `temp_4_entity`, `throughput_entity`, `runtime_entity`.
+Neue Optionen: `jk_prefix`, `show_jk_info` (Standard `true`), `alarm_entity`, `alarm_list_entity`, `charge_status_entity`, `charge_status_time_entity`, `temp_2_entity` … `temp_5_entity`, `throughput_entity`, `runtime_entity`, `balancer_status_entity`, `balance_current_entity`, `charger_entity`, `precharge_entity`, `heating_current_entity`, `battery_type_entity`, `emergency_entity`, `prot_*_entity` (Freigabe-Timer). Alle werden mit `jk_prefix` automatisch gefunden.
+
+**Fertiges Dashboard:** Im Add-on-Fork die Option `create_dashboard: true` setzen – dann legt das Add-on das Dashboard „JK-BMS“ mit einer Karte je BMS an.
 
 ### Bilder
 
