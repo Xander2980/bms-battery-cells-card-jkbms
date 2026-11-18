@@ -1,10 +1,9 @@
-[![hacs_badge](https://img.shields.io/badge/HACS-Default%20✔-brightgreen.svg)](https://github.com/hacs/plugin)
-[![HACS validation](https://img.shields.io/github/actions/workflow/status/jayjojayson/bms-battery-cells-card/validate.yml?label=HACS%20Validation)](https://github.com/jayjojayson/bms-battery-cells-card/actions?query=workflow%3Avalidate)
-[![GitHub release](https://img.shields.io/github/release/jayjojayson/bms-battery-cells-card?include_prereleases=&sort=semver&color=blue)](https://github.com/jayjojayson/bms-battery-cells-card/releases/)
-![Downloads](https://img.shields.io/github/downloads/jayjojayson/bms-battery-cells-card/total?label=Downloads&color=blue)
-[![README Deutsch](https://img.shields.io/badge/README-DE-orange)](https://github.com/jayjojayson/bms-battery-cells-card/blob/main/docs/README-de.md)
-[![Support](https://img.shields.io/badge/%20-Support%20Me-steelblue?style=flat&logo=paypal&logoColor=white)](https://www.paypal.me/quadFlyerFW)
-[![stars](https://img.shields.io/github/stars/jayjojayson/bms-battery-cells-card)](https://github.com/jayjojayson/bms-battery-cells-card/stargazers)
+[![HACS Custom](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://hacs.xyz/docs/faq/custom_repositories/)
+[![HACS validation](https://img.shields.io/github/actions/workflow/status/Xander2980/bms-battery-cells-card-jkbms/validate.yml?label=HACS%20Validation)](https://github.com/Xander2980/bms-battery-cells-card-jkbms/actions?query=workflow%3Avalidate)
+[![GitHub release](https://img.shields.io/github/release/Xander2980/bms-battery-cells-card-jkbms?include_prereleases=&sort=semver&color=blue)](https://github.com/Xander2980/bms-battery-cells-card-jkbms/releases/)
+![Downloads](https://img.shields.io/github/downloads/Xander2980/bms-battery-cells-card-jkbms/total?label=Downloads&color=blue)
+[![README Deutsch](https://img.shields.io/badge/README-DE-orange)](https://github.com/Xander2980/bms-battery-cells-card-jkbms/blob/main/docs/README-de.md)
+[![stars](https://img.shields.io/github/stars/Xander2980/bms-battery-cells-card-jkbms)](https://github.com/Xander2980/bms-battery-cells-card-jkbms/stargazers)
 
 # BMS Battery Cells Card – JK-BMS-Fork
 
@@ -39,9 +38,17 @@ balance_led: true
 
 ### Installation (HACS, benutzerdefiniertes Repository)
 
+Direkt in Home Assistant öffnen:
+
+[![In HACS öffnen](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Xander2980&repository=bms-battery-cells-card-jkbms&category=plugin)
+
+Oder von Hand:
+
 1. HACS → ⋮ → Benutzerdefinierte Repositories → `https://github.com/Xander2980/bms-battery-cells-card-jkbms`, Typ **Dashboard** → Hinzufügen.
 2. „BMS Battery Cells Card (JK-BMS)“ herunterladen, Browser neu laden.
 3. Karte `custom:bms-battery-cells-card-jkbms` verwenden.
+
+> Hinweis: Das Repository gehört in **HACS**, nicht unter Einstellungen → Apps → Repositories – dort erscheint sonst „is not a valid app repository“.
 
 Erwartete Entitäten (Präfix `p`): `sensor.p_bms_cell_N_volt`, `sensor.p_bms_cell_N_ohm`, `sensor.p_bms_soc_pourcentage`, `sensor.p_bms_sonde_1..4_temp`, `sensor.p_bms_charge_status_text`, `binary_sensor.p_p_alarm_active`, `sensor.p_p_alarm_list` usw.
 
@@ -103,16 +110,16 @@ If you like this custom card, I would really appreciate a star rating ⭐. Thank
 - **Thresholds:** Adjustable Minimum and Maximum voltage for color scaling
 - **Visual Tweaks:** Options for thicker borders, hiding header values, and a lot more
 
-<img width="48%" height="auto" alt="image" src="https://github.com/jayjojayson/bms-battery-cells-card/blob/main/docs/bms-battery-cells-card.png" /> <img width="48%" height="auto" alt="image" src="https://github.com/jayjojayson/bms-battery-cells-card/blob/main/docs/bms-battery-cells-card2.png" />  
-<img width="96%" height="auto" alt="image" src="https://github.com/jayjojayson/bms-battery-cells-card/blob/main/docs/bms-battery-cells-card_big.png" />
-<img width="48%" height="auto" alt="image" src="https://github.com/jayjojayson/bms-battery-cells-card/blob/main/docs/bms-battery-cells-card-compact-2.png" /> <img width="48%" height="auto" alt="image" src="https://github.com/jayjojayson/bms-battery-cells-card/blob/main/docs/bms-battery-cells-card-compact.png" />  
-<img width="48%" height="auto" alt="image" src="https://github.com/jayjojayson/bms-battery-cells-card/blob/main/docs/bms-battery-cells-card_one_cell.png" /> <img width="48%" height="auto" alt="image" src="https://github.com/jayjojayson/bms-battery-cells-card/blob/main/docs/bms-battery-cells-card-ani.gif" />
+<img width="48%" height="auto" alt="image" src="https://github.com/Xander2980/bms-battery-cells-card-jkbms/blob/main/docs/bms-battery-cells-card.png" /> <img width="48%" height="auto" alt="image" src="https://github.com/Xander2980/bms-battery-cells-card-jkbms/blob/main/docs/bms-battery-cells-card2.png" />  
+<img width="96%" height="auto" alt="image" src="https://github.com/Xander2980/bms-battery-cells-card-jkbms/blob/main/docs/bms-battery-cells-card_big.png" />
+<img width="48%" height="auto" alt="image" src="https://github.com/Xander2980/bms-battery-cells-card-jkbms/blob/main/docs/bms-battery-cells-card-compact-2.png" /> <img width="48%" height="auto" alt="image" src="https://github.com/Xander2980/bms-battery-cells-card-jkbms/blob/main/docs/bms-battery-cells-card-compact.png" />  
+<img width="48%" height="auto" alt="image" src="https://github.com/Xander2980/bms-battery-cells-card-jkbms/blob/main/docs/bms-battery-cells-card_one_cell.png" /> <img width="48%" height="auto" alt="image" src="https://github.com/Xander2980/bms-battery-cells-card-jkbms/blob/main/docs/bms-battery-cells-card-ani.gif" />
 
 ---
 
 detailed view:
 
-<img width="96%" height="auto" alt="image" src="https://github.com/jayjojayson/bms-battery-cells-card/blob/main/docs/bms-battery-cells-card-detailed-view.png" />
+<img width="96%" height="auto" alt="image" src="https://github.com/Xander2980/bms-battery-cells-card-jkbms/blob/main/docs/bms-battery-cells-card-detailed-view.png" />
 
 ---
 
@@ -122,9 +129,9 @@ detailed view:
 
 - Add the GitHub repository via the link in Home Assistant.
 
-  [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=jayjojayson&repository=bms-battery-cells-card&category=plugin)
+  [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Xander2980&repository=bms-battery-cells-card-jkbms&category=plugin)
 
-- The "BMS Battery Cells Card" should now be available in HACS. Click "INSTALL".
+- The "BMS Battery Cells Card (JK-BMS)" should now be available in HACS. Click "INSTALL".
 - The resource will be automatically added to your Lovelace configuration.
 
 <details>
@@ -134,11 +141,11 @@ detailed view:
 
 Open HACS in Home Assistant..
 
-- Go to "Frontend" and click the three dots in the upper right corner.
+- Click the three dots in the upper right corner.
 - Select "Custom repositories".
-- Add the URL of your GitHub repository and select "Lovelace" as the category.
+- Add `https://github.com/Xander2980/bms-battery-cells-card-jkbms` and select "Dashboard" as the type.
 - Click "ADD".
-- The "BMS Battery Cells Card" should now be available in HACS. Click "INSTALL".
+- The "BMS Battery Cells Card (JK-BMS)" should now be available in HACS. Click "INSTALL".
 - The resource will be automatically added to your Lovelace configuration.
 </details>
 
@@ -147,20 +154,20 @@ Open HACS in Home Assistant..
  
 ### Manual  Installation in HA
 1.  **Download files:**
-    * Download the bms-battery-cells-card.js from this repository.
+    * Download the dist/bms-battery-cells-card-jkbms.js from this repository.
 
 2.  **import files to Home Assistant:**
-    - Create a new folder named `bms-battery-cells-card` in the `www/community`-directory of your Home Assistant configuration. (The www directory is located in the same folder as your configuration.yaml).
+    - Create a new folder named `bms-battery-cells-card-jkbms` in the `www/community`-directory of your Home Assistant configuration. (The www directory is located in the same folder as your configuration.yaml).
     - Copy all downloaded files into this new folder. Your folder structure should look like this:
       ```
-      /config/www/community/bms-battery-cells-card/bms-battery-cells-card.js
+      /config/www/community/bms-battery-cells-card-jkbms/bms-battery-cells-card-jkbms.js
       ```
 
 3.  **Add the resource to Home Assistant::**
 _ In Home Assistant, go to Settings > Dashboards.
 _ Click the three-dot menu in the top right corner and select Resources.
 _ Click + Add resource.
-_ Enter /local/community/bms-battery-cells-card/bms-battery-cells-card.js as the URL.
+_ Enter /local/community/bms-battery-cells-card-jkbms/bms-battery-cells-card-jkbms.js as the URL.
 _ Select JavaScript module as the resource type.
 _ Click Create.
 </details>
@@ -193,7 +200,7 @@ Although UI configuration is recommended, the map can also be configured manuall
 
 | name                      | type      | required | description                                                        | default             |
 | ------------------------- | --------- | -------- | ------------------------------------------------------------------ | ------------------- |
-| `type`                    | `string`  | Yes      | Card type definition. Must be `custom:bms-battery-cells-card`.     |                     |
+| `type`                    | `string`  | Yes      | Card type definition. Must be `custom:bms-battery-cells-card-jkbms`.     |                     |
 | `title`                   | `string`  | No       | Title displayed at the top of the card. Without a title, a default in the Home Assistant language is used. | e.g. `"Battery Cells"` |
 | `cells`                   | `list`    | Yes      | List of cell definitions (entity + name).                          | 4 example cells     |
 | `cells[].entity`          | `string`  | Yes      | Sensor entity representing the cell voltage.                       |                     |
@@ -234,7 +241,7 @@ Although UI configuration is recommended, the map can also be configured manuall
 simple example:
 
 ```yaml
-type: custom:bms-battery-cells-card
+type: custom:bms-battery-cells-card-jkbms
 title: Battery Cells
 cells:
   - entity: sensor.cell_1
@@ -250,7 +257,7 @@ cells:
 advanced example:
 
 ```yaml
-type: custom:bms-battery-cells-card
+type: custom:bms-battery-cells-card-jkbms
 cells:
   - name: "1"
     entity: sensor.vrm_maximum_cell_voltage_batt_1
@@ -318,7 +325,7 @@ show_average: false
 Adjust Header & Titel
 
 ```yaml
-type: custom:bms-battery-cells-card
+type: custom:bms-battery-cells-card-jkbms
 title: Battery Cells
 cells:
   - entity: sensor.cell_1
@@ -340,7 +347,7 @@ card_mod:
 Point out Min-/Max-Cells
 
 ```yaml
-type: custom:bms-battery-cells-card
+type: custom:bms-battery-cells-card-jkbms
 title: Battery Cells
 cells:
   - entity: sensor.cell_1
@@ -363,7 +370,7 @@ card_mod:
 Cell-Name present more discreetly
 
 ```yaml
-type: custom:bms-battery-cells-card
+type: custom:bms-battery-cells-card-jkbms
 title: Battery Cells
 cells:
   - entity: sensor.cell_1
@@ -383,7 +390,7 @@ card_mod:
 Customize tooltip design (Touch, Hover)
 
 ```yaml
-type: custom:bms-battery-cells-card
+type: custom:bms-battery-cells-card-jkbms
 title: Battery Cells
 cells:
   - entity: sensor.cell_1
