@@ -1,6 +1,6 @@
 {
-  "name": "BMS Battery Cells Card",
+  "name": "BMS Battery Cells Card (JK-BMS)",
   "render_readme": true,
   "content_in_root": false,
-  "filename": "bms-battery-cells-card.js"
+  "filename": "bms-battery-cells-card-jkbms.js"
 }

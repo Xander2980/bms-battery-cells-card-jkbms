@@ -1,5 +1,18 @@
 export default {
     editor: {
+        jk_section: "JK-BMS (Add-on jkbms-rs485)",
+        jk_prefix: "JK-BMS Präfix (z. B. bms_master, bms_1)",
+        jk_prefix_hint: "Mit Präfix werden Zellen, Widerstände und alle Sensoren automatisch gesetzt. Selbst eingetragene Werte haben Vorrang.",
+        alarm_entity: "Alarm aktiv (Binary Sensor)",
+        alarm_list_entity: "Alarmliste (Text-Sensor)",
+        charge_status_entity: "Ladephase (Text-Sensor)",
+        charge_status_time_entity: "Dauer der Ladephase (Text-Sensor)",
+        temp_2: "Temperaturfühler 2",
+        temp_3: "Temperaturfühler 3",
+        temp_4: "Temperaturfühler 4",
+        throughput: "Durchsatz gesamt (Ah)",
+        runtime: "Laufzeit (Text-Sensor)",
+        show_jk_info: "JK-Infos anzeigen (Alarm, Ladephase, Temperaturen)",
         title: "Titel der Karte",
         main_sensors: "Haupt-Sensoren",
         soc: "SoC (Batteriestand %)",
@@ -63,6 +76,13 @@ export default {
         val_off: "Wert für OFF (z.B. 'Aus' oder 'False')"
     },
     card: {
+        alarm: "Alarm",
+        no_alarm: "Keine Alarme",
+        charge_phase: "Ladephase",
+        temps: "Temperaturen",
+        throughput: "Durchsatz",
+        runtime: "Laufzeit",
+        max_res: "Max. Widerstand",
         default_title: "Batterie Zellen",
         power: "Leistung",
         soc: "Batteriestand",

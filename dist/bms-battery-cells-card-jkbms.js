@@ -1,5 +1,18 @@
 var de = {
     editor: {
+        jk_section: "JK-BMS (Add-on jkbms-rs485)",
+        jk_prefix: "JK-BMS Präfix (z. B. bms_master, bms_1)",
+        jk_prefix_hint: "Mit Präfix werden Zellen, Widerstände und alle Sensoren automatisch gesetzt. Selbst eingetragene Werte haben Vorrang.",
+        alarm_entity: "Alarm aktiv (Binary Sensor)",
+        alarm_list_entity: "Alarmliste (Text-Sensor)",
+        charge_status_entity: "Ladephase (Text-Sensor)",
+        charge_status_time_entity: "Dauer der Ladephase (Text-Sensor)",
+        temp_2: "Temperaturfühler 2",
+        temp_3: "Temperaturfühler 3",
+        temp_4: "Temperaturfühler 4",
+        throughput: "Durchsatz gesamt (Ah)",
+        runtime: "Laufzeit (Text-Sensor)",
+        show_jk_info: "JK-Infos anzeigen (Alarm, Ladephase, Temperaturen)",
         title: "Titel der Karte",
         main_sensors: "Haupt-Sensoren",
         soc: "SoC (Batteriestand %)",
@@ -63,6 +76,13 @@ var de = {
         val_off: "Wert für OFF (z.B. 'Aus' oder 'False')"
     },
     card: {
+        alarm: "Alarm",
+        no_alarm: "Keine Alarme",
+        charge_phase: "Ladephase",
+        temps: "Temperaturen",
+        throughput: "Durchsatz",
+        runtime: "Laufzeit",
+        max_res: "Max. Widerstand",
         default_title: "Batterie Zellen",
         power: "Leistung",
         soc: "Batteriestand",
@@ -99,6 +119,19 @@ var de = {
 
 var en = {
     editor: {
+        jk_section: "JK-BMS (jkbms-rs485 add-on)",
+        jk_prefix: "JK-BMS prefix (e.g. bms_master, bms_1)",
+        jk_prefix_hint: "With a prefix, cells, resistances and all sensors are set automatically. Values you enter yourself take precedence.",
+        alarm_entity: "Alarm active (binary sensor)",
+        alarm_list_entity: "Alarm list (text sensor)",
+        charge_status_entity: "Charge phase (text sensor)",
+        charge_status_time_entity: "Charge phase duration (text sensor)",
+        temp_2: "Temperature probe 2",
+        temp_3: "Temperature probe 3",
+        temp_4: "Temperature probe 4",
+        throughput: "Total throughput (Ah)",
+        runtime: "Runtime (text sensor)",
+        show_jk_info: "Show JK info (alarm, charge phase, temperatures)",
         title: "Card Title",
         main_sensors: "Main Sensors",
         soc: "SoC (State of Charge %)",
@@ -162,6 +195,13 @@ var en = {
         val_off: "Value for OFF (e.g. 'OFF' or 'False')"
     },
     card: {
+        alarm: "Alarm",
+        no_alarm: "No alarms",
+        charge_phase: "Charge phase",
+        temps: "Temperatures",
+        throughput: "Throughput",
+        runtime: "Runtime",
+        max_res: "Max. resistance",
         default_title: "Battery Cells",
         power: "Power",
         soc: "SoC",
@@ -433,6 +473,42 @@ const LitElement = customElements.get("ha-lit-element") || Object.getPrototypeOf
 const html = LitElement.prototype.html;
 const css = LitElement.prototype.css;
 
+// JK-BMS-Fork: eigener Elementname, damit die Original-Karte parallel installiert bleiben kann
+const CARD_TAG = "bms-battery-cells-card-jkbms";
+const EDITOR_TAG = "bms-battery-cells-card-jkbms-editor";
+const CARD_VERSION = "v_2.0-jk.1";
+
+// Entitäten-Schema des JK-BMS-RS485-Add-ons (jean-luc1203/jkbms-rs485-addon), Präfix z. B. "bms_master"
+// "{p}" = Präfix. Selbst konfigurierte Werte haben immer Vorrang.
+const JK_MAP = {
+  soc_entity: "sensor.{p}_bms_soc_pourcentage",
+  watt_entity: "sensor.{p}_bms_puissance_totale",
+  total_voltage_entity: "sensor.{p}_bms_tension_totale_volt",
+  total_current_entity: "sensor.{p}_bms_courant_total",
+  temp_entity: "sensor.{p}_bms_sonde_1_temp",
+  temp_2_entity: "sensor.{p}_bms_sonde_2_temp",
+  temp_3_entity: "sensor.{p}_bms_sonde_3_temp",
+  temp_4_entity: "sensor.{p}_bms_sonde_4_temp",
+  temp_mos_entity: "sensor.{p}_bms_mos_temp",
+  soh_entity: "sensor.{p}_bms_soh_pourcentage",
+  capacity_entity: "sensor.{p}_bms_capacite_batterie_ah",
+  cycle_capacity_entity: "sensor.{p}_bms_capacite_restante_ah",
+  cycle_count_entity: "sensor.{p}_bms_nombre_cycle",
+  throughput_entity: "sensor.{p}_bms_cycle_capacite_ah",
+  runtime_entity: "sensor.{p}_bms_total_runtime_formatted",
+  charge_status_entity: "sensor.{p}_bms_charge_status_text",
+  charge_status_time_entity: "sensor.{p}_bms_charge_status_time_formatted",
+  alarm_entity: "binary_sensor.{p}_{p}_alarm_active",
+  alarm_list_entity: "sensor.{p}_{p}_alarm_list",
+  // Nur Anzeige (binary_sensor ist nicht schaltbar) – ein versehentlicher Klick schaltet das BMS nicht ab
+  stat_charge_entity: "binary_sensor.{p}_bms_switch_charge",
+  stat_discharge_entity: "binary_sensor.{p}_bms_switch_decharge",
+  stat_balance_entity: "binary_sensor.{p}_bms_balance_action",
+};
+const JK_CELL = "sensor.{p}_bms_cell_{i}_volt";
+const JK_CELL_RES = "sensor.{p}_bms_cell_{i}_ohm";
+const JK_MAX_CELLS = 32;
+
 const ICON_CLOSE = "M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z";
 
 // Selector Konfiguration
@@ -474,6 +550,7 @@ class BmsBatteryCellsCardEditor extends LitElement {
         font-weight: 600; display: block; color: var(--primary-text-color);
         border-bottom: 1px solid var(--divider-color); padding-bottom: 4px; margin-bottom: 4px;
       }
+      .hint { font-size: 12px; color: var(--secondary-text-color); }
       .sub-header { font-weight: 600; display: block; margin: 4px 0 0; color: var(--primary-text-color); }
 
       ha-selector { display: block; width: 100%; }
@@ -706,6 +783,22 @@ class BmsBatteryCellsCardEditor extends LitElement {
         ${this._renderSelector('editor.title', 'title', textSelector)}
 
         <div class="section">
+          <span class="section-header">${this._localize('editor.jk_section')}</span>
+          ${this._renderSelector('editor.jk_prefix', 'jk_prefix', textSelector)}
+          <span class="hint">${this._localize('editor.jk_prefix_hint')}</span>
+          ${this._renderSwitch('editor.show_jk_info', 'show_jk_info', true)}
+          ${this._renderEntitySelector('editor.alarm_entity', 'alarm_entity', binarySelector)}
+          ${this._renderEntitySelector('editor.alarm_list_entity', 'alarm_list_entity', sensorSelector)}
+          ${this._renderEntitySelector('editor.charge_status_entity', 'charge_status_entity', sensorSelector)}
+          ${this._renderEntitySelector('editor.charge_status_time_entity', 'charge_status_time_entity', sensorSelector)}
+          ${this._renderEntitySelector('editor.temp_2', 'temp_2_entity', sensorSelector)}
+          ${this._renderEntitySelector('editor.temp_3', 'temp_3_entity', sensorSelector)}
+          ${this._renderEntitySelector('editor.temp_4', 'temp_4_entity', sensorSelector)}
+          ${this._renderEntitySelector('editor.throughput', 'throughput_entity', sensorSelector)}
+          ${this._renderEntitySelector('editor.runtime', 'runtime_entity', sensorSelector)}
+        </div>
+
+        <div class="section">
           <span class="section-header">${this._localize('editor.display_options')}</span>
           ${this._renderSwitch('editor.show_detailed_view', 'show_detailed_view', false, true)}
 
@@ -806,12 +899,12 @@ class BmsBatteryCellsCardEditor extends LitElement {
   }
 }
 
-if (!customElements.get("bms-battery-cells-card-editor")) {
-  customElements.define("bms-battery-cells-card-editor", BmsBatteryCellsCardEditor);
+if (!customElements.get(EDITOR_TAG)) {
+  customElements.define(EDITOR_TAG, BmsBatteryCellsCardEditor);
 }
 
 console.log(
-  "%c🔋 BMS Battery Cells Card v_2.0 loaded",
+  `%c🔋 BMS Battery Cells Card (JK-BMS) ${CARD_VERSION} loaded`,
   "background: #2ecc71; color: #000; padding: 2px 6px; border-radius: 4px; font-weight: bold;"
 );
 
@@ -855,18 +948,53 @@ class BmsBatteryCellsCard extends HTMLElement {
 
     static async getConfigElement() {
         await loadCardHelpers();
-        return document.createElement("bms-battery-cells-card-editor");
+        return document.createElement(EDITOR_TAG);
     }
 
     static getStubConfig() {
         return {
-            cells: Array.from({length: 4}, (_, i) => ({ entity: `sensor.cell_${i+1}`, name: `${i+1}`, balance_entity: '' }))
+            jk_prefix: 'bms_master',
+            show_detailed_view: true,
+            show_status: true,
+            balance_led: true
         };
+    }
+
+    // JK-Präfix: fehlende Einträge aus dem Add-on-Schema ergänzen. Braucht hass (Zellenzahl, Existenzprüfung).
+    _resolveJk() {
+        const raw = this._rawConfig || {};
+        const p = String(raw.jk_prefix || '').trim().toLowerCase();
+        this._jkResolved = true;
+        if (!p || !this._hass) return;
+        const states = this._hass.states;
+        const fill = (tpl) => tpl.split('{p}').join(p);
+        Object.entries(JK_MAP).forEach(([key, tpl]) => {
+            if (raw[key]) return;                // selbst eingetragen -> Vorrang
+            const id = fill(tpl);
+            if (states[id]) this._config[key] = id;
+        });
+        if (!Array.isArray(raw.cells) || raw.cells.length === 0) {
+            const cells = [];
+            for (let i = 1; i <= JK_MAX_CELLS; i++) {
+                const id = fill(JK_CELL).replace('{i}', i);
+                if (!states[id]) break;
+                const res = fill(JK_CELL_RES).replace('{i}', i);
+                cells.push({ entity: id, name: `${i}`, ...(states[res] ? { resistance_entity: res } : {}) });
+            }
+            this._config.cells = cells;
+        }
+        this._entityCache = null;
+    }
+
+    _jkInfoEnabled() {
+        const c = this._config;
+        return c.show_jk_info !== false && !!(c.alarm_entity || c.alarm_list_entity || c.charge_status_entity || c.temp_2_entity || c.temp_3_entity || c.temp_4_entity);
     }
 
     set hass(hass) {
         const oldHass = this._hass;
         this._hass = hass;
+        if (!this._jkResolved) { this._resolveJk(); this._initialized = false; }
         if (!this._initialized || (oldHass && oldHass.locale?.language !== hass.locale?.language)) {
             // Erstes Rendern oder Sprachwechsel (Beschriftungen/Titel stehen im HTML) -> neu aufbauen
             this._initRender();
@@ -931,11 +1059,14 @@ class BmsBatteryCellsCard extends HTMLElement {
             ...config
         };
         if (!Array.isArray(this._config.cells)) this._config.cells = [];
+        this._rawConfig = config;
+        this._jkResolved = false;
         // Title explicitly set by the user (the default title is not shown in the detailed view)
         this._userTitle = config.title || '';
         this._entityCache = null;
         this._initialized = false;
         if (this._hass) {
+            this._resolveJk();
             this._initRender();
             this._updateValues(); // sonst stehen nach einer Konfigurationsänderung bis zum nächsten Update nur "--" da
         }
@@ -1370,6 +1501,20 @@ class BmsBatteryCellsCard extends HTMLElement {
             };
             const removeElement = (container, id) => { const el = container.querySelector(`#${id}`); if (el) el.remove(); return 0; };
 
+            if (this._config.show_jk_info !== false && (this._config.alarm_entity || this._config.alarm_list_entity)) {
+                const { alarm, text } = this._jkAlarmState();
+                if (alarm) {
+                    idx += updateElement(subInfoContainer, 'sub-alarm', idx, (el) => {
+                        el.className = 'sub-info-item';
+                        el.style.color = '#e53935';
+                        el.title = text || this._localize('card.alarm');
+                        const content = `<ha-icon icon="mdi:alert" style="color:#e53935"></ha-icon><span>${this._localize('card.alarm')}</span>`;
+                        if (el.innerHTML !== content) el.innerHTML = content;
+                        el.onclick = (e) => { e.stopPropagation(); this._fireMoreInfo(this._config.alarm_list_entity || this._config.alarm_entity); };
+                    });
+                } else idx += removeElement(subInfoContainer, 'sub-alarm');
+            }
+
             if (total_voltage_entity && vTotal !== null) {
                 idx += updateElement(subInfoContainer, 'sub-volt', idx, (el) => {
                     el.className = 'sub-info-item';
@@ -1741,6 +1886,20 @@ class BmsBatteryCellsCard extends HTMLElement {
                 .status-row.has-heater { flex-wrap: wrap; }
                 .status-row.has-heater .status-pill { flex: 1 1 40%; }
                 
+                /* JK-BMS: Alarm, Ladephase, Temperaturen */
+                .jk-alarm { border-radius: 8px; padding: 10px 14px; display: flex; align-items: center; gap: 10px; font-weight: 600; cursor: pointer; }
+                .jk-alarm.ok { background: rgba(67,160,71,0.12); color: #43a047; font-weight: 500; padding: 6px 14px; }
+                .jk-alarm.bad { background: rgba(229,57,53,0.18); color: #e53935; border: 1px solid rgba(229,57,53,0.5); animation: jk-pulse 2s infinite; }
+                .jk-alarm .jk-alarm-txt { flex: 1; white-space: normal; }
+                @keyframes jk-pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(229,57,53,0.4); } 50% { box-shadow: 0 0 0 6px rgba(229,57,53,0); } }
+                .jk-row { display: flex; gap: 12px; flex-wrap: wrap; }
+                .jk-pill { flex: 1 1 0; min-width: 70px; background: rgba(var(--rgb-primary-text-color), 0.04); border-radius: 8px; padding: 8px 10px; display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; }
+                .jk-pill .jk-lbl { font-size: 0.75rem; color: var(--secondary-text-color); text-transform: uppercase; letter-spacing: 0.4px; }
+                .jk-pill .jk-val { font-size: 1.05rem; font-weight: 600; }
+                .jk-temps { display: grid; gap: 12px; }
+                .jk-phase { flex-direction: row; justify-content: center; gap: 10px; }
+                .cell-res.res-max { color: #ffa726; font-weight: 700; }
+
                 @media (max-width: 500px) { .col-3 { grid-template-columns: 1fr; } .cell-list-grid { grid-template-columns: 1fr; } }
                 
                 ${standardCss}
@@ -1753,6 +1912,7 @@ class BmsBatteryCellsCard extends HTMLElement {
         const html = `
             <ha-card>
                 ${detailTitle ? `<div class="detail-title">${this._esc(detailTitle)}</div>` : ''}
+                ${this._jkInfoEnabled() ? this._renderJkBlockHtml() : ''}
                 ${show_charts !== false ? `
                 <div class="row col-2">
                     <div class="box chart-box clickable" data-entity="${this._config.total_voltage_entity}" id="chart-voltage">
@@ -1874,6 +2034,84 @@ class BmsBatteryCellsCard extends HTMLElement {
     }
 
 
+
+    // --- JK-BMS: Alarmbanner, Ladephase, Temperaturfühler -----------------------------------------
+    _renderJkBlockHtml() {
+        const c = this._config;
+        const temps = ['temp_entity', 'temp_2_entity', 'temp_3_entity', 'temp_4_entity'].filter(k => c[k]);
+        const phase = c.charge_status_entity ? `
+            <div class="jk-pill jk-phase clickable" data-entity="${c.charge_status_entity}">
+                <span class="jk-lbl">${this._localize('card.charge_phase')}</span>
+                <span class="jk-val" id="jk-phase">--</span>
+            </div>` : '';
+        const tempPills = temps.map((k, i) => `
+            <div class="jk-pill clickable" data-entity="${c[k]}">
+                <span class="jk-lbl">T${i + 1}</span>
+                <span class="jk-val" id="jk-${k}">--</span>
+            </div>`).join('');
+        const alarm = (c.alarm_entity || c.alarm_list_entity) ? `
+            <div class="jk-alarm ok clickable" id="jk-alarm" data-entity="${c.alarm_list_entity || c.alarm_entity}">
+                <ha-icon id="jk-alarm-icon" icon="mdi:shield-check"></ha-icon><span class="jk-alarm-txt" id="jk-alarm-txt">--</span>
+            </div>` : '';
+        const tempsRow = temps.length ? `<div class="jk-temps" style="grid-template-columns: repeat(${temps.length}, 1fr);">${tempPills}</div>` : '';
+        return `${alarm}${phase}${tempsRow}`;
+    }
+
+    // Alarm aktiv? binary_sensor "on" oder eine Alarmliste, die nicht "No alarms"/leer ist
+    _jkAlarmState() {
+        const c = this._config;
+        const active = c.alarm_entity ? String(this._getState(c.alarm_entity) || '').toLowerCase() === 'on' : false;
+        const listRaw = c.alarm_list_entity ? this._getState(c.alarm_list_entity) : null;
+        const list = listRaw && !['unknown', 'unavailable'].includes(listRaw) ? String(listRaw).trim() : '';
+        const listIsAlarm = !!list && !/^no\s+(bms\s+)?alarms?$/i.test(list) && !/^(none|ok|0|-)$/i.test(list);
+        return { alarm: active || listIsAlarm, text: listIsAlarm ? list : '' };
+    }
+
+    _updateJkBlock() {
+        const c = this._config;
+        const root = this.shadowRoot;
+        const box = root.getElementById('jk-alarm');
+        if (box) {
+            const { alarm, text } = this._jkAlarmState();
+            box.classList.toggle('bad', alarm); box.classList.toggle('ok', !alarm);
+            const icon = root.getElementById('jk-alarm-icon');
+            if (icon) icon.setAttribute('icon', alarm ? 'mdi:alert' : 'mdi:shield-check');
+            const txt = root.getElementById('jk-alarm-txt');
+            if (txt) txt.innerText = alarm ? `${this._localize('card.alarm')}: ${text || 'BMS'}` : this._localize('card.no_alarm');
+        }
+        const ph = root.getElementById('jk-phase');
+        if (ph) {
+            const s = this._getState(c.charge_status_entity);
+            const dur = c.charge_status_time_entity ? this._getState(c.charge_status_time_entity) : null;
+            const valid = (v) => v && !['unknown', 'unavailable'].includes(v);
+            const showDur = valid(dur) && !/^0\s*s?$/i.test(String(dur).trim());
+            ph.innerText = valid(s) ? `${s}${showDur ? ' · ' + dur : ''}` : '--';
+            const lower = String(s || '').toLowerCase();
+            ph.style.color = lower.includes('float') ? '#03a9f4' : (lower.includes('absorp') ? '#ffa726' : (lower.includes('bulk') ? '#43a047' : ''));
+        }
+        ['temp_entity', 'temp_2_entity', 'temp_3_entity', 'temp_4_entity'].forEach(k => {
+            const el = root.getElementById(`jk-${k}`);
+            if (!el || !c[k]) return;
+            const v = this._parseNumber(c[k]);
+            const unit = this._getTempUnit(c[k]);
+            el.innerText = v !== null ? `${v.toFixed(1)} ${unit}` : '--';
+            const tc = v !== null ? this._tempToCelsius(v, unit) : null;
+            el.style.color = tc === null ? '' : (tc < 5 ? '#42a5f5' : (tc > 40 ? '#ef5350' : ''));
+        });
+    }
+
+    // Widerstand lesbar: Werte < 1 Ω als mΩ
+    _formatResistance(entityId) {
+        const r = this._parseNumber(entityId);
+        if (r === null) return { str: '--', mohm: null };
+        const unit = this._getUnit(entityId);
+        const u = unit.toLowerCase();
+        let mohm = null;
+        if (u === 'mω' || u === 'mohm') mohm = r;
+        else if (u === 'ω' || u === 'ohm' || u === '') mohm = r * 1000;
+        if (mohm !== null) return { str: `${Math.round(mohm)} mΩ`, mohm };
+        return { str: `${parseFloat(r.toFixed(3))} ${unit}`, mohm: null };
+    }
 
     _getCellBackground() { 
         const { horizontal_layout, cell_background_color} = this._config;
@@ -1997,6 +2235,11 @@ class BmsBatteryCellsCard extends HTMLElement {
             }
         }
         addIfConf(rightList, 'cycle_count_entity', 'card.cycle_count', '');
+        addIfConf(leftList, 'throughput_entity', 'card.throughput', 'Ah', false, 0);
+        if (c.runtime_entity) {
+            const rt = this._getState(c.runtime_entity);
+            rightList.push(`<div class="detail-item clickable" data-entity="${c.runtime_entity}"><span class="detail-label">${this._localize('card.runtime')} :</span><span class="detail-val-txt">${this._esc(rt && !['unknown','unavailable'].includes(rt) ? rt : '--')}</span></div>`);
+        }
         
         // Issue #5: delta always in mV (unit_of_measurement of the sensor, fallback: value < 1 = Volt)
         let deltaDisplay = this._toMilliVolts(c.cell_diff_sensor, delta);
@@ -2091,6 +2334,8 @@ class BmsBatteryCellsCard extends HTMLElement {
             
             // --- Generate HTML List (Hybrid Logic) ---
             const showResistance = c.cells.some(cell => cell.resistance_entity);
+            let maxRes = -1;
+            if (showResistance) c.cells.forEach(cell => { if (cell.resistance_entity) { const m = this._formatResistance(cell.resistance_entity).mohm; if (m !== null && m > maxRes) maxRes = m; } });
             c.cells.forEach((cell, i) => {
                 const v = this._parseNumber(cell.entity);
                 if (v !== null) {
@@ -2123,15 +2368,13 @@ class BmsBatteryCellsCard extends HTMLElement {
                     // Issue #3: optional internal resistance per cell
                     let resHtml = '';
                     if (showResistance) {
-                        let resStr = '';
+                        let resStr = ''; let isMax = false;
                         if (cell.resistance_entity) {
-                            const r = this._parseNumber(cell.resistance_entity);
-                            if (r !== null) {
-                                const rUnit = this._getUnit(cell.resistance_entity);
-                                resStr = `${parseFloat(r.toFixed(2))}${rUnit ? ' ' + rUnit : ''}`;
-                            } else resStr = '--';
+                            const f = this._formatResistance(cell.resistance_entity);
+                            resStr = f.str;
+                            isMax = f.mohm !== null && maxRes > 0 && f.mohm === maxRes;
                         }
-                        resHtml = `<span class="cell-res clickable" ${cell.resistance_entity ? `data-entity="${cell.resistance_entity}"` : ''}>${resStr}</span>`;
+                        resHtml = `<span class="cell-res clickable ${isMax ? 'res-max' : ''}" ${cell.resistance_entity ? `data-entity="${cell.resistance_entity}"` : ''} ${isMax ? `title="${this._localize('card.max_res')}"` : ''}>${resStr}</span>`;
                     }
 
                     cellListHtml[colIdx].push(`<div class="cell-text-row clickable" data-entity="${cell.entity}"><span><span class="cell-num">${String(i+1).padStart(2,'0')}.</span><span class="cell-v">${val.toFixed(3)} V</span></span>${resHtml}${balHtml}</div>`);
@@ -2140,6 +2383,8 @@ class BmsBatteryCellsCard extends HTMLElement {
             listContainer.innerHTML = `<div class="cell-list-col">${cellListHtml[0].join('')}</div><div class="cell-list-col">${cellListHtml[1].join('')}</div>`;
         }
         
+        if (this._jkInfoEnabled()) this._updateJkBlock();
+
         if (this.chartVoltage && vTotal !== null) { this._updateChartData(this.chartVoltage, Date.now(), vTotal); }
         if (this.chartDelta && deltaDisplay !== null) { this._updateChartData(this.chartDelta, Date.now(), deltaDisplay); }
         
@@ -2149,14 +2394,14 @@ class BmsBatteryCellsCard extends HTMLElement {
     }
 }
 
-customElements.define('bms-battery-cells-card', BmsBatteryCellsCard);
+if (!customElements.get(CARD_TAG)) customElements.define(CARD_TAG, BmsBatteryCellsCard);
 
 window.customCards = window.customCards || [];
-if (!window.customCards.some(c => c.type === "bms-battery-cells-card")) {
+if (!window.customCards.some(c => c.type === CARD_TAG)) {
     window.customCards.push({
-        type: "bms-battery-cells-card",
-        name: "BMS Battery Cells Card",
+        type: CARD_TAG,
+        name: "BMS Battery Cells Card (JK-BMS)",
         preview: true,
-        description: "Moderne Visualisierung von Batteriezellen Spannungen"
+        description: "Zellspannungen, Widerstände, Alarme, Ladephase und Temperaturen für JK-BMS (Fork der BMS Battery Cells Card)"
     });
 }

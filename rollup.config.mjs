@@ -4,7 +4,7 @@ import commonjs from '@rollup/plugin-commonjs';
 export default {
   input: 'src/bms-battery-cells-card.js',
   output: {
-    file: 'dist/bms-battery-cells-card.js',
+    file: 'dist/bms-battery-cells-card-jkbms.js',
     format: 'es'
   },
   plugins: [

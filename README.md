@@ -6,6 +6,47 @@
 [![Support](https://img.shields.io/badge/%20-Support%20Me-steelblue?style=flat&logo=paypal&logoColor=white)](https://www.paypal.me/quadFlyerFW)
 [![stars](https://img.shields.io/github/stars/jayjojayson/bms-battery-cells-card)](https://github.com/jayjojayson/bms-battery-cells-card/stargazers)
 
+# BMS Battery Cells Card – JK-BMS-Fork
+
+Fork der [BMS Battery Cells Card](https://github.com/jayjojayson/bms-battery-cells-card) von jayjojayson (Stand v_2.0), erweitert für das **JK-BMS** mit dem Add-on [jkbms-rs485-addon](https://github.com/jean-luc1203/jkbms-rs485-addon).
+
+**Kartentyp:** `custom:bms-battery-cells-card-jkbms` – eigener Name und eigene Datei (`bms-battery-cells-card-jkbms.js`), die Original-Karte kann parallel installiert bleiben.
+
+## Zusätzlich gegenüber dem Original
+
+| Funktion | Beschreibung |
+|---|---|
+| **Automatik per Präfix** | `jk_prefix: bms_master` (bzw. `bms_1`, `bms_2` …) setzt Zellen (Anzahl wird erkannt), Zellwiderstände und alle Sensoren automatisch. Selbst eingetragene Werte haben Vorrang. |
+| **Alarm-Banner** | Grün „Keine Alarme“ bzw. rot pulsierend mit Alarmtext (`alarm_entity`, `alarm_list_entity`). In der Standardansicht erscheint bei Alarm ein rotes Symbol im Kopf. |
+| **Ladephase** | Bulk / Absorption / Float mit Dauer (`charge_status_entity`, `charge_status_time_entity`). |
+| **Temperaturfühler 1–4** | `temp_entity`, `temp_2_entity`, `temp_3_entity`, `temp_4_entity` als eigene Zeile. |
+| **Zellwiderstände** | Anzeige in mΩ, höchster Widerstand orange markiert. |
+| **Durchsatz & Laufzeit** | `throughput_entity` (Ah gesamt), `runtime_entity`. |
+| **Sichere Status-Anzeige** | Mit Präfix zeigen Laden/Entladen/Balance die `binary_sensor`-Zustände – ein Klick schaltet das BMS **nicht** ab. Wer schalten will, trägt `stat_charge_entity` usw. selbst ein. |
+
+Neue Optionen: `jk_prefix`, `show_jk_info` (Standard `true`), `alarm_entity`, `alarm_list_entity`, `charge_status_entity`, `charge_status_time_entity`, `temp_2_entity`, `temp_3_entity`, `temp_4_entity`, `throughput_entity`, `runtime_entity`.
+
+### Beispiel
+
+```yaml
+type: custom:bms-battery-cells-card-jkbms
+title: Master BMS
+jk_prefix: bms_master
+show_detailed_view: true
+show_status: true
+balance_led: true
+```
+
+### Installation (HACS, benutzerdefiniertes Repository)
+
+1. HACS → ⋮ → Benutzerdefinierte Repositories → `https://github.com/Xander2980/bms-battery-cells-card-jkbms`, Typ **Dashboard** → Hinzufügen.
+2. „BMS Battery Cells Card (JK-BMS)“ herunterladen, Browser neu laden.
+3. Karte `custom:bms-battery-cells-card-jkbms` verwenden.
+
+Erwartete Entitäten (Präfix `p`): `sensor.p_bms_cell_N_volt`, `sensor.p_bms_cell_N_ohm`, `sensor.p_bms_soc_pourcentage`, `sensor.p_bms_sonde_1..4_temp`, `sensor.p_bms_charge_status_text`, `binary_sensor.p_p_alarm_active`, `sensor.p_p_alarm_list` usw.
+
+---
+
 # BMS Battery Cells Card
 
 Visualization of individual cell voltages of your battery storage system (BMS)

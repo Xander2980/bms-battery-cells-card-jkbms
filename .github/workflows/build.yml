@@ -34,5 +34,5 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "BMS-Card Auto-build"
-          file_pattern: dist/bms-battery-cells-card.js
+          file_pattern: dist/bms-battery-cells-card-jkbms.js
           branch: main
