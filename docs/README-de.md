@@ -10,6 +10,8 @@
 
 Fork der [BMS Battery Cells Card](https://github.com/jayjojayson/bms-battery-cells-card) von jayjojayson (Stand v_2.0), erweitert für das **JK-BMS** mit dem Add-on [jkbms-rs485-addon](https://github.com/jean-luc1203/jkbms-rs485-addon).
 
+📖 **[Anleitung mit Bildern: Einrichten & Werte einstellen](EINRICHTEN.md)**
+
 **Kartentyp:** `custom:bms-battery-cells-card-jkbms` – eigener Name und eigene Datei (`bms-battery-cells-card-jkbms.js`), die Original-Karte kann parallel installiert bleiben.
 
 ## Zusätzlich gegenüber dem Original
