@@ -30,12 +30,14 @@ Neue Optionen: `jk_prefix`, `show_jk_info` (Standard `true`), `alarm_entity`, `a
 
 ### Bilder
 
-Ansicht mit drei parallelen JK-BMS (Master, BMS 1, BMS 2): je Spalte oben die Detailansicht, darunter die kompakte Zelltabelle. Werte vom 18.11.2026 (Ladung läuft, Ladephase Bulk). Darunter Detailansicht einzeln, ein Alarm-Beispiel und die Zelltabelle.
+Ansicht mit drei parallelen JK-BMS (Master, BMS 1, BMS 2): je Spalte oben die Detailansicht, darunter die kompakte Zelltabelle. Werte vom 18.11.2026, 23:45 (Master in Absorption, BMS 1 und 2 mit Entlade-Balancer). Darunter Detailansicht einzeln, ein Beispiel mit Alarm und laufender Schutzabschaltung und die Zelltabelle.
 
 <img width="96%" alt="BMS-Ansicht mit drei JK-BMS" src="jk-dashboard.png" />
 
 <img width="48%" alt="Detailansicht" src="jk-detailansicht.png" /> <img width="48%" alt="Alarm-Beispiel" src="jk-alarm.png" />
 <img width="48%" alt="Kompakte Zelltabelle" src="jk-kompakt.png" />
+
+Die Bilder werden aus `dist/` erzeugt: `npm install` und `npm run screenshots` (Werte in `tools/screenshots/data.mjs`, braucht Chrome/Chromium). Nach jeder Änderung an der Karte neu erzeugen.
 
 ### Beispiel
 

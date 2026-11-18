@@ -1,14 +1,15 @@
 {
   "name": "bms-battery-cells-card-jkbms",
   "version": "2.1.0-jk.3",
-  "description": "Home Assistant Lovelace-Karte für JK-BMS (Fork der BMS Battery Cells Card von jayjojayson)",
+  "description": "Home Assistant Lovelace-Karte f\u00fcr JK-BMS (Fork der BMS Battery Cells Card von jayjojayson)",
   "main": "index.js",
   "directories": {
     "doc": "docs"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "rollup -c"
+    "build": "rollup -c",
+    "screenshots": "node tools/screenshots/render.mjs"
   },
   "repository": {
     "type": "git",
@@ -23,8 +24,12 @@
   },
   "homepage": "https://github.com/Xander2980/bms-battery-cells-card-jkbms#readme",
   "devDependencies": {
+    "@mdi/js": "^7.4.47",
     "@rollup/plugin-commonjs": "^29.0.0",
     "@rollup/plugin-node-resolve": "^16.0.3",
+    "esbuild": "^0.28.2",
+    "lit": "^3.3.3",
+    "playwright-core": "^1.65.1",
     "rollup": "^4.57.1"
   }
 }

@@ -2032,7 +2032,7 @@ class BmsBatteryCellsCard extends HTMLElement {
                 .jk-chip .jk-lbl { font-size: 0.7rem; color: var(--secondary-text-color); text-transform: uppercase; letter-spacing: 0.4px; }
                 .jk-chip.warn { color: #ffa726; background: rgba(255,167,38,0.12); }
                 .jk-chip.ok { color: #43a047; background: rgba(67,160,71,0.12); }
-                .jk-temps .jk-pill { padding: 4px 6px; }
+                .jk-temps .jk-pill { padding: 4px 6px; min-width: 0; }
                 .jk-temps .jk-pill .jk-lbl { font-size: 0.65rem; }
                 .jk-temps .jk-pill .jk-val { font-size: 0.9rem; }
                 .cell-res.res-max { color: #ffa726; font-weight: 700; }
