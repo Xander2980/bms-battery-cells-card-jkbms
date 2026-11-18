@@ -1,5 +1,7 @@
 export default {
     editor: {
+        show_jk_settings: "Show BMS settings (detailed view)",
+        jk_settings_open: "BMS settings expanded by default",
         temp_5: "Temperature sensor 5",
         balancer_status: "Balancer status (text sensor)",
         balance_current: "Balance current",
@@ -83,6 +85,13 @@ export default {
         val_off: "Value for OFF (e.g. 'OFF' or 'False')"
     },
     card: {
+        bms_settings: "BMS settings",
+        bms_settings_hint: "read from BMS, change in JK app",
+        set_volt: "Cell voltages",
+        set_bal: "Balancing",
+        set_cur: "Currents & times",
+        set_temp: "Temperatures (°C)",
+        set_gen: "General",
         unit_d: "d",
         unit_h: "h",
         unit_min: "min",

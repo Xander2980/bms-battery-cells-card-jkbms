@@ -21,13 +21,14 @@ Fork der [BMS Battery Cells Card](https://github.com/jayjojayson/bms-battery-cel
 | **Alarm-Banner** | Grün „Keine Alarme“ bzw. rot pulsierend mit Alarmtext (`alarm_entity`, `alarm_list_entity`). In der Standardansicht erscheint bei Alarm ein rotes Symbol im Kopf. |
 | **Ladephase** | Bulk / Absorption / Float mit Dauer (`charge_status_entity`, `charge_status_time_entity`). |
 | **Temperaturfühler 1–5** | `temp_entity` … `temp_5_entity` als eigene Zeile. |
+| **BMS-Einstellungen** | Einklappbarer Bereich unten in der Detailansicht: alle Einstellwerte des BMS (RCV, RFV, SOC-100 %, OVP/UVP, Balancing, Ströme, Temperaturen) mit den Namen aus der JK-App – nur Anzeige. |
 | **Zellwiderstände** | Anzeige in mΩ, höchster Widerstand orange markiert. |
 | **Durchsatz & Laufzeit** | `throughput_entity` (Ah gesamt), `runtime_entity`. |
 | **Neue Werte (Add-on-Fork ab 4.2)** | Leistung mit Vorzeichen (Status Laden/Entladen stimmt), Temperaturfühler 5, Heizung, Ladegerät angesteckt, Vorladung, Balancer-Status (Lade-/Entlade-Balancer), Balancer-Strom, Heizstrom (nur wenn die Heizung läuft), Batterietyp. |
 | **Schutzabschaltung** | Rotes Banner, solange ein Freigabe-Timer läuft (Lade-/Entlade-Überstrom, Kurzschluss, Unter-/Überspannung, Notfall), mit Restzeit in s. |
 | **Sichere Status-Anzeige** | Mit Präfix zeigen Laden/Entladen/Balance die `binary_sensor`-Zustände – ein Klick schaltet das BMS **nicht** ab. Wer schalten will, trägt `stat_charge_entity` usw. selbst ein. |
 
-Neue Optionen: `jk_prefix`, `show_jk_info` (Standard `true`), `alarm_entity`, `alarm_list_entity`, `charge_status_entity`, `charge_status_time_entity`, `temp_2_entity` … `temp_5_entity`, `throughput_entity`, `runtime_entity`, `balancer_status_entity`, `balance_current_entity`, `charger_entity`, `precharge_entity`, `heating_current_entity`, `battery_type_entity`, `emergency_entity`, `prot_*_entity` (Freigabe-Timer). Alle werden mit `jk_prefix` automatisch gefunden.
+Neue Optionen: `jk_prefix`, `show_jk_settings` (Standard `true`), `jk_settings_open` (Standard `false`), `show_jk_info` (Standard `true`), `alarm_entity`, `alarm_list_entity`, `charge_status_entity`, `charge_status_time_entity`, `temp_2_entity` … `temp_5_entity`, `throughput_entity`, `runtime_entity`, `balancer_status_entity`, `balance_current_entity`, `charger_entity`, `precharge_entity`, `heating_current_entity`, `battery_type_entity`, `emergency_entity`, `prot_*_entity` (Freigabe-Timer). Alle werden mit `jk_prefix` automatisch gefunden.
 
 **Fertiges Dashboard:** Im Add-on-Fork die Option `create_dashboard: true` setzen – dann legt das Add-on das Dashboard „JK-BMS“ mit einer Karte je BMS an.
 
@@ -38,7 +39,7 @@ Ansicht mit drei parallelen JK-BMS (Master, BMS 1, BMS 2): je Spalte oben die De
 <img width="96%" alt="BMS-Ansicht mit drei JK-BMS" src="docs/jk-dashboard.png" />
 
 <img width="48%" alt="Detailansicht" src="docs/jk-detailansicht.png" /> <img width="48%" alt="Alarm-Beispiel" src="docs/jk-alarm.png" />
-<img width="48%" alt="Kompakte Zelltabelle" src="docs/jk-kompakt.png" />
+<img width="48%" alt="Kompakte Zelltabelle" src="docs/jk-kompakt.png" /> <img width="48%" alt="BMS-Einstellungen" src="docs/jk-einstellungen.png" />
 
 Die Bilder werden aus `dist/` erzeugt: `npm install` und `npm run screenshots` (Werte in `tools/screenshots/data.mjs`, braucht Chrome/Chromium). Nach jeder Änderung an der Karte neu erzeugen.
 

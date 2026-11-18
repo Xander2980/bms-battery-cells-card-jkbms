@@ -45,6 +45,7 @@ const shots = [
             compact('bms_master', 'Master BMS (JK)'), compact('bms_1', 'BMS 1 (JK)'), compact('bms_2', 'BMS 2 (JK)')] },
   { file: 'jk-detailansicht.png', states: buildStates(), cards: [detail('bms_master', 'Master BMS (JK)')] },
   { file: 'jk-alarm.png', states: buildStates({ alarmOn: 'bms_1', protectionOn: 'bms_1' }), cards: [detail('bms_1', 'BMS 1 (JK)')] },
+  { file: 'jk-einstellungen.png', states: buildStates(), cards: [{ ...detail('bms_master', 'Master BMS (JK)'), show_charts: false, jk_settings_open: true }] },
   { file: 'jk-kompakt.png', states: buildStates(), cards: [compact('bms_master', 'Master BMS (JK)')] },
 ];
 

@@ -5,6 +5,8 @@ const per = {
   bms_1: { soc: 100, soh: 100, power: 410.4, unsigned: 423.82, volt: 55.17, curr: 7.438, t: [24.5, 25.5, 25.2, 24.1, 27.1], mos: 27.1, cap: 280, rem: 280, cyc: 70, thr: 19698.373, rt: 24299921, phase: 'Bulk', phaseSec: 0, bal: 'on', balTxt: 'Discharging balancer', balI: -2.096 },
   bms_2: { soc: 100, soh: 100, power: 378.9, unsigned: 378.851, volt: 55.15, curr: 6.87, t: [22, 22.2, 22.8, 22.6, 25.5], mos: 25.5, cap: 280, rem: 280, cyc: 65, thr: 18321.441, rt: 24300188, phase: 'Bulk', phaseSec: 0, bal: 'on', balTxt: 'Discharging balancer', balI: -2.019 },
 };
+// BMS-Einstellungen (number-Entitäten), live 19.11.2026 00:14 – bei allen drei BMS gleich
+const settings = "balance_starting_voltage|3.4|V;balance_trigger_voltage|0.01|V;cell_count|16|;cell_request_charge_voltage|3.45|V;cell_request_float_voltage|3.45|V;cell_soc0_voltage|2.64|V;cell_soc100_voltage|3.449|V;cell_voltage_overvoltage_protection|3.65|V;cell_voltage_overvoltage_recovery|3.448|V;cell_voltage_undervoltage_protection|2.6|V;cell_voltage_undervoltage_recovery|2.65|V;charge_overcurrent_protection_delay|3|s;charge_overcurrent_protection_recovery_time|60|s;charge_overtemperature_protection|55|°C;charge_overtemperature_protection_recovery|50|°C;charge_undertemperature_protection|2|°C;charge_undertemperature_protection_recovery|5|°C;discharge_overcurrent_protection_delay|30|s;discharge_overcurrent_protection_recovery_time|60|s;discharge_overtemperature_protection|50|°C;discharge_overtemperature_protection_recovery|45|°C;max_balance_current|2|A;max_charge_current|200|A;max_discharge_current|200|A;power_off_voltage|2.5|V;power_tube_overtemperature_protection|80|°C;power_tube_overtemperature_protection_recovery|70|°C;short_circuit_protection_delay|5|s;short_circuit_protection_recovery_time|5|s;smart_sleep_voltage|3.285|V;total_battery_capacity_ah|280|Ah";
 export function buildStates({ alarmOn = null, protectionOn = null } = {}) {
   const st = (s, u = '') => ({ state: String(s), attributes: u ? { unit_of_measurement: u } : {} });
   const S = {};
@@ -47,6 +49,10 @@ export function buildStates({ alarmOn = null, protectionOn = null } = {}) {
     a(`sensor.${p}_bms_battery_type_text`, 'LFP');
     for (const k of ['emergency_countdown', 'discharge_ocp_release_timer', 'discharge_scp_release_timer', 'charge_ocp_release_timer', 'charge_scp_release_timer', 'undervoltage_release_timer', 'overvoltage_release_timer'])
       a(`sensor.${p}_bms_${k}`, protectionOn === p && k === 'charge_ocp_release_timer' ? 42 : 0, 's');
+  }
+  for (const p of Object.keys(per)) for (const row of settings.split(';')) {
+    const [k, v, u] = row.split('|');
+    S[`number.${p}_bms_${k}`] = st(v, u);
   }
   return S;
 }

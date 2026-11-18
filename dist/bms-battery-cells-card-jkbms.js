@@ -1,5 +1,7 @@
 var de = {
     editor: {
+        show_jk_settings: "BMS-Einstellungen anzeigen (Detailansicht)",
+        jk_settings_open: "BMS-Einstellungen aufgeklappt starten",
         temp_5: "Temperaturfühler 5",
         balancer_status: "Balancer-Status (Text-Sensor)",
         balance_current: "Balancer-Strom",
@@ -83,6 +85,13 @@ var de = {
         val_off: "Wert für OFF (z.B. 'Aus' oder 'False')"
     },
     card: {
+        bms_settings: "BMS-Einstellungen",
+        bms_settings_hint: "aus dem BMS, ändern in der JK-App",
+        set_volt: "Zellspannungen",
+        set_bal: "Balancing",
+        set_cur: "Ströme & Zeiten",
+        set_temp: "Temperaturen (°C)",
+        set_gen: "Allgemein",
         unit_d: "T",
         unit_h: "Std.",
         unit_min: "Min.",
@@ -148,6 +157,8 @@ var de = {
 
 var en = {
     editor: {
+        show_jk_settings: "Show BMS settings (detailed view)",
+        jk_settings_open: "BMS settings expanded by default",
         temp_5: "Temperature sensor 5",
         balancer_status: "Balancer status (text sensor)",
         balance_current: "Balance current",
@@ -231,6 +242,13 @@ var en = {
         val_off: "Value for OFF (e.g. 'OFF' or 'False')"
     },
     card: {
+        bms_settings: "BMS settings",
+        bms_settings_hint: "read from BMS, change in JK app",
+        set_volt: "Cell voltages",
+        set_bal: "Balancing",
+        set_cur: "Currents & times",
+        set_temp: "Temperatures (°C)",
+        set_gen: "General",
         unit_d: "d",
         unit_h: "h",
         unit_min: "min",
@@ -623,6 +641,34 @@ const JK_PROT = [
   ['prot_uv_entity', 'card.prot_uv'],
   ['prot_ov_entity', 'card.prot_ov'],
 ];
+// BMS-Einstellungen (number-Entitäten des Add-ons), Beschriftung wie in der JK-App.
+// [Gruppe, App-Name, Entitäts-Endung, Endung Wiedereinschalten/zweiter Wert, Nachkommastellen]
+const JK_SETTINGS = [
+  ['volt', 'Vol. Cell RCV', 'cell_request_charge_voltage', null, 3],
+  ['volt', 'Vol. Cell RFV', 'cell_request_float_voltage', null, 3],
+  ['volt', 'SOC-100% Volt.', 'cell_soc100_voltage', null, 3],
+  ['volt', 'SOC-0% Volt.', 'cell_soc0_voltage', null, 3],
+  ['volt', 'Cell OVP / OVPR', 'cell_voltage_overvoltage_protection', 'cell_voltage_overvoltage_recovery', 3],
+  ['volt', 'Cell UVP / UVPR', 'cell_voltage_undervoltage_protection', 'cell_voltage_undervoltage_recovery', 3],
+  ['volt', 'Power Off Vol.', 'power_off_voltage', null, 3],
+  ['volt', 'Smart Sleep Volt.', 'smart_sleep_voltage', null, 3],
+  ['bal', 'Start Balance Volt.', 'balance_starting_voltage', null, 3],
+  ['bal', 'Balance Trig. Volt.', 'balance_trigger_voltage', null, 3],
+  ['bal', 'Max Balance Cur.', 'max_balance_current', null, 1],
+  ['cur', 'Max Charge Cur.', 'max_charge_current', null, 0],
+  ['cur', 'Charge OCP Delay / OCPR', 'charge_overcurrent_protection_delay', 'charge_overcurrent_protection_recovery_time', 0],
+  ['cur', 'Max Discharge Cur.', 'max_discharge_current', null, 0],
+  ['cur', 'Discharge OCP Delay / OCPR', 'discharge_overcurrent_protection_delay', 'discharge_overcurrent_protection_recovery_time', 0],
+  ['cur', 'SCP Delay / SCPR', 'short_circuit_protection_delay', 'short_circuit_protection_recovery_time', 0],
+  ['temp', 'Charge OTP / OTPR', 'charge_overtemperature_protection', 'charge_overtemperature_protection_recovery', 0],
+  ['temp', 'Discharge OTP / OTPR', 'discharge_overtemperature_protection', 'discharge_overtemperature_protection_recovery', 0],
+  ['temp', 'Charge UTP / UTPR', 'charge_undertemperature_protection', 'charge_undertemperature_protection_recovery', 0],
+  ['temp', 'MOS OTP / OTPR', 'power_tube_overtemperature_protection', 'power_tube_overtemperature_protection_recovery', 0],
+  ['gen', 'Battery Capacity', 'total_battery_capacity_ah', null, 0],
+  ['gen', 'Cell Count', 'cell_count', null, 0],
+];
+const JK_SETTING_ID = 'number.{p}_bms_{k}';
+
 const JK_TEMPS = ['temp_entity', 'temp_2_entity', 'temp_3_entity', 'temp_4_entity', 'temp_5_entity'];
 const JK_CELL = "sensor.{p}_bms_cell_{i}_volt";
 const JK_CELL_RES = "sensor.{p}_bms_cell_{i}_ohm";
@@ -906,6 +952,8 @@ class BmsBatteryCellsCardEditor extends LitElement {
           ${this._renderSelector('editor.jk_prefix', 'jk_prefix', textSelector)}
           <span class="hint">${this._localize('editor.jk_prefix_hint')}</span>
           ${this._renderSwitch('editor.show_jk_info', 'show_jk_info', true)}
+          ${this._renderSwitch('editor.show_jk_settings', 'show_jk_settings', true)}
+          ${this._renderSwitch('editor.jk_settings_open', 'jk_settings_open', false)}
           ${this._renderEntitySelector('editor.alarm_entity', 'alarm_entity', binarySelector)}
           ${this._renderEntitySelector('editor.alarm_list_entity', 'alarm_list_entity', sensorSelector)}
           ${this._renderEntitySelector('editor.charge_status_entity', 'charge_status_entity', sensorSelector)}
@@ -1109,7 +1157,47 @@ class BmsBatteryCellsCard extends HTMLElement {
             }
             this._config.cells = cells;
         }
+        // BMS-Einstellungen: nur die Einträge, deren Entität es gibt
+        const sid = (k) => k ? fill(JK_SETTING_ID).replace('{k}', k) : null;
+        this._jkSettings = JK_SETTINGS.map(([group, label, k1, k2, dec], i) => ({
+            group, label, dec, idx: i,
+            a: states[sid(k1)] ? sid(k1) : null,
+            b: k2 && states[sid(k2)] ? sid(k2) : null,
+        })).filter(s => s.a);
         this._entityCache = null;
+    }
+
+    _jkSettingsEnabled() {
+        return this._config.show_jk_settings !== false && Array.isArray(this._jkSettings) && this._jkSettings.length > 0;
+    }
+
+    _renderJkSettingsHtml() {
+        const groups = [['volt', 'card.set_volt'], ['bal', 'card.set_bal'], ['cur', 'card.set_cur'], ['temp', 'card.set_temp'], ['gen', 'card.set_gen']];
+        const body = groups.map(([g, key]) => {
+            const rows = this._jkSettings.filter(s => s.group === g);
+            if (!rows.length) return '';
+            return `<div class="jk-set-group"><div class="jk-set-head">${this._localize(key)}</div>${rows.map(s => `
+                <div class="jk-set-row clickable" data-entity="${s.a}"><span class="jk-set-lbl">${this._esc(s.label)}</span><span class="jk-set-val" id="jk-set-${s.idx}">--</span></div>`).join('')}</div>`;
+        }).join('');
+        return `<details class="box jk-settings" ${this._config.jk_settings_open ? 'open' : ''}>
+            <summary><ha-icon icon="mdi:tune-vertical"></ha-icon><span>${this._localize('card.bms_settings')}</span><span class="jk-set-hint">${this._localize('card.bms_settings_hint')}</span></summary>
+            <div class="jk-set-grid">${body}</div>
+        </details>`;
+    }
+
+    _updateJkSettings() {
+        const fmt = (id, dec) => {
+            const v = this._parseNumber(id);
+            return v === null ? '--' : v.toFixed(dec);
+        };
+        this._jkSettings.forEach(s => {
+            const el = this.shadowRoot.getElementById(`jk-set-${s.idx}`);
+            if (!el) return;
+            const unit = this._getUnit(s.a);
+            const txt = s.b ? `${fmt(s.a, s.dec)} / ${fmt(s.b, s.dec)}` : fmt(s.a, s.dec);
+            const out = `${txt}${unit ? ' ' + unit : ''}`;
+            if (el.innerText !== out) el.innerText = out;
+        });
     }
 
     _jkInfoEnabled() {
@@ -1141,6 +1229,7 @@ class BmsBatteryCellsCard extends HTMLElement {
         (c.cells || []).forEach(cell => {
             ['entity', 'balance_entity', 'resistance_entity'].forEach(k => { if (cell && cell[k]) ids.add(cell[k]); });
         });
+        (this._jkSettings || []).forEach(s => { if (s.a) ids.add(s.a); if (s.b) ids.add(s.b); });
         this._entityCache = [...ids];
         return this._entityCache;
     }
@@ -2025,6 +2114,18 @@ class BmsBatteryCellsCard extends HTMLElement {
                 .jk-pill .jk-lbl { font-size: 0.75rem; color: var(--secondary-text-color); text-transform: uppercase; letter-spacing: 0.4px; }
                 .jk-pill .jk-val { font-size: 1.05rem; font-weight: 600; }
                 .jk-temps { display: grid; gap: 12px; }
+                .jk-settings { padding: 0; }
+                .jk-settings summary { cursor: pointer; padding: 12px 14px; display: flex; align-items: center; gap: 8px; font-weight: 600; list-style: none; }
+                .jk-settings summary::-webkit-details-marker { display: none; }
+                .jk-settings summary::after { content: '▸'; margin-left: auto; transition: transform .2s; color: var(--secondary-text-color); }
+                .jk-settings[open] summary::after { transform: rotate(90deg); }
+                .jk-set-hint { font-weight: 400; font-size: 0.75rem; color: var(--secondary-text-color); }
+                .jk-set-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 18px; padding: 0 14px 12px; }
+                .jk-set-group { display: flex; flex-direction: column; gap: 2px; }
+                .jk-set-head { font-size: 0.72rem; text-transform: uppercase; letter-spacing: .5px; color: var(--secondary-text-color); margin: 6px 0 2px; }
+                .jk-set-row { display: flex; justify-content: space-between; gap: 8px; font-size: 0.85rem; padding: 2px 0; border-bottom: 1px dashed rgba(127,127,127,.2); }
+                .jk-set-val { font-weight: 600; white-space: nowrap; }
+                @media (max-width: 500px) { .jk-set-grid { grid-template-columns: 1fr; } }
                 .jk-phase { flex-direction: row; justify-content: center; gap: 10px; }
                 .jk-info { display: flex; flex-wrap: wrap; gap: 6px 8px; justify-content: center; align-items: center; }
                 .jk-chip { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 12px; font-size: 0.85rem; background: rgba(var(--rgb-primary-text-color), 0.05); cursor: pointer; }
@@ -2129,6 +2230,7 @@ class BmsBatteryCellsCard extends HTMLElement {
                     <div class="box detail-list" id="d-list-right"></div>
                 </div>
                 ${show_cell_list !== false ? `<div class="box" style="padding: 10px;"><div class="cell-list-grid" id="d-cell-list"></div></div>` : ''}
+                ${this._jkSettingsEnabled() ? this._renderJkSettingsHtml() : ''}
                 
                 ${standardHtml}
             </ha-card>
@@ -2589,6 +2691,7 @@ class BmsBatteryCellsCard extends HTMLElement {
         }
         
         if (this._jkInfoEnabled()) this._updateJkBlock();
+        if (this._jkSettingsEnabled()) this._updateJkSettings();
 
         if (this.chartVoltage && vTotal !== null) { this._updateChartData(this.chartVoltage, Date.now(), vTotal); }
         if (this.chartDelta && deltaDisplay !== null) { this._updateChartData(this.chartDelta, Date.now(), deltaDisplay); }

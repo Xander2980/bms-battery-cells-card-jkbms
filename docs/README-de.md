@@ -22,11 +22,12 @@ Fork der [BMS Battery Cells Card](https://github.com/jayjojayson/bms-battery-cel
 | **Alarm-Banner** | Grün „Keine Alarme“ bzw. rot pulsierend mit Alarmtext (`alarm_entity`, `alarm_list_entity`). In der Standardansicht erscheint bei Alarm ein rotes Symbol im Kopf. |
 | **Ladephase** | Bulk / Absorption / Float mit Dauer (`charge_status_entity`, `charge_status_time_entity`). |
 | **Temperaturfühler 1–4** | `temp_entity`, `temp_2_entity`, `temp_3_entity`, `temp_4_entity` als eigene Zeile. |
+| **BMS-Einstellungen** | Einklappbarer Bereich unten in der Detailansicht: alle Einstellwerte des BMS (RCV, RFV, SOC-100 %, OVP/UVP, Balancing, Ströme, Temperaturen) mit den Namen aus der JK-App – nur Anzeige. |
 | **Zellwiderstände** | Anzeige in mΩ, höchster Widerstand orange markiert. |
 | **Durchsatz & Laufzeit** | `throughput_entity` (Ah gesamt), `runtime_entity`. |
 | **Sichere Status-Anzeige** | Mit Präfix zeigen Laden/Entladen/Balance die `binary_sensor`-Zustände – ein Klick schaltet das BMS **nicht** ab. Wer schalten will, trägt `stat_charge_entity` usw. selbst ein. |
 
-Neue Optionen: `jk_prefix`, `show_jk_info` (Standard `true`), `alarm_entity`, `alarm_list_entity`, `charge_status_entity`, `charge_status_time_entity`, `temp_2_entity`, `temp_3_entity`, `temp_4_entity`, `throughput_entity`, `runtime_entity`.
+Neue Optionen: `jk_prefix`, `show_jk_settings` (Standard `true`), `jk_settings_open` (Standard `false`), `show_jk_info` (Standard `true`), `alarm_entity`, `alarm_list_entity`, `charge_status_entity`, `charge_status_time_entity`, `temp_2_entity`, `temp_3_entity`, `temp_4_entity`, `throughput_entity`, `runtime_entity`.
 
 ### Bilder
 
@@ -35,7 +36,7 @@ Ansicht mit drei parallelen JK-BMS (Master, BMS 1, BMS 2): je Spalte oben die De
 <img width="96%" alt="BMS-Ansicht mit drei JK-BMS" src="jk-dashboard.png" />
 
 <img width="48%" alt="Detailansicht" src="jk-detailansicht.png" /> <img width="48%" alt="Alarm-Beispiel" src="jk-alarm.png" />
-<img width="48%" alt="Kompakte Zelltabelle" src="jk-kompakt.png" />
+<img width="48%" alt="Kompakte Zelltabelle" src="jk-kompakt.png" /> <img width="48%" alt="BMS-Einstellungen" src="jk-einstellungen.png" />
 
 Die Bilder werden aus `dist/` erzeugt: `npm install` und `npm run screenshots` (Werte in `tools/screenshots/data.mjs`, braucht Chrome/Chromium). Nach jeder Änderung an der Karte neu erzeugen.
 
