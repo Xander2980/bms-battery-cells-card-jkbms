@@ -26,6 +26,15 @@ Fork der [BMS Battery Cells Card](https://github.com/jayjojayson/bms-battery-cel
 
 Neue Optionen: `jk_prefix`, `show_jk_info` (Standard `true`), `alarm_entity`, `alarm_list_entity`, `charge_status_entity`, `charge_status_time_entity`, `temp_2_entity`, `temp_3_entity`, `temp_4_entity`, `throughput_entity`, `runtime_entity`.
 
+### Bilder
+
+Ansicht mit drei parallelen JK-BMS (Master, BMS 1, BMS 2): je Spalte oben die Detailansicht, darunter die kompakte Zelltabelle. Werte vom 18.11.2026 (Ladung läuft, Ladephase Bulk). Darunter Detailansicht einzeln, ein Alarm-Beispiel und die Zelltabelle.
+
+<img width="96%" alt="BMS-Ansicht mit drei JK-BMS" src="jk-dashboard.png" />
+
+<img width="48%" alt="Detailansicht" src="jk-detailansicht.png" /> <img width="48%" alt="Alarm-Beispiel" src="jk-alarm.png" />
+<img width="48%" alt="Kompakte Zelltabelle" src="jk-kompakt.png" />
+
 ### Beispiel
 
 ```yaml
@@ -108,19 +117,6 @@ Wenn euch die custom Card gefällt, würde ich mich sehr über eine Sternebewert
 - **UI Editor:** Vollständig konfigurierbar über den Home Assistant UI-Editor (kein YAML erforderlich)
 - **Grenzwerte:** Einstellbare Minimal- und Maximalspannung für die Farbskalierung
 - **Optische Anpassungen:** Optionen für dickere Rahmen, Ausblenden von Header-Werten und vieles mehr
-
-standard-view:
-
-<img width="48%" height="auto" alt="image" src="https://github.com/Xander2980/bms-battery-cells-card-jkbms/blob/main/docs/bms-battery-cells-card.png" /> <img width="48%" height="auto" alt="image" src="https://github.com/Xander2980/bms-battery-cells-card-jkbms/blob/main/docs/bms-battery-cells-card2.png" />  
-<img width="96%" height="auto" alt="image" src="https://github.com/Xander2980/bms-battery-cells-card-jkbms/blob/main/docs/bms-battery-cells-card_big.png" />
-<img width="48%" height="auto" alt="image" src="https://github.com/Xander2980/bms-battery-cells-card-jkbms/blob/main/docs/bms-battery-cells-card-compact-2.png" /> <img width="48%" height="auto" alt="image" src="https://github.com/Xander2980/bms-battery-cells-card-jkbms/blob/main/docs/bms-battery-cells-card-compact.png" />  
-<img width="48%" height="auto" alt="image" src="https://github.com/Xander2980/bms-battery-cells-card-jkbms/blob/main/docs/bms-battery-cells-card_one_cell.png" /> <img width="48%" height="auto" alt="image" src="https://github.com/Xander2980/bms-battery-cells-card-jkbms/blob/main/docs/bms-battery-cells-card-ani.gif" />
-
----
-
-detailed view:
-
-<img width="96%" height="auto" alt="image" src="https://github.com/Xander2980/bms-battery-cells-card-jkbms/blob/main/docs/bms-battery-cells-card-detailed-view.png" />
 
 ---
 
