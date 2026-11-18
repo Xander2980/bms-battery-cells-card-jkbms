@@ -50,6 +50,12 @@ export function buildStates({ alarmOn = null, protectionOn = null } = {}) {
     for (const k of ['emergency_countdown', 'discharge_ocp_release_timer', 'discharge_scp_release_timer', 'charge_ocp_release_timer', 'charge_scp_release_timer', 'undervoltage_release_timer', 'overvoltage_release_timer'])
       a(`sensor.${p}_bms_${k}`, protectionOn === p && k === 'charge_ocp_release_timer' ? 42 : 0, 's');
   }
+  const extra = { 'sensor:discharge_undertemperature_protection': [2, '°C'], 'sensor:discharge_undertemperature_protection_recovery': [7, '°C'], 'sensor:heating_start_temperature': [-10, '°C'], 'sensor:heating_stop_temperature': [0, '°C'], 'sensor:smart_sleep_delay': [24, 'h'], 'sensor:precharge_time': [0, 's'], 'sensor:battery_type_text': ['LFP', ''], 'switch:charging_floating_mode': ['on', ''], 'switch:smart_sleep_switch': ['off', ''], 'switch:timed_stored_data_switch': ['off', ''], 'switch:display_always_on_switch': ['off', ''], 'switch:disable_pcl_module_switch': ['off', ''], 'binary_sensor:heating_switch': ['off', ''], 'binary_sensor:disable_temperature_sensors': ['off', ''], 'binary_sensor:discharge_ocp2': ['on', ''], 'binary_sensor:discharge_ocp3': ['off', ''], 'binary_sensor:dry_alarm_intermittent': ['off', ''], 'binary_sensor:special_charger': ['off', ''] };
+  const addr = { bms_master: 0, bms_1: 1, bms_2: 2 };
+  for (const p of Object.keys(per)) {
+    for (const [k, [v, u]] of Object.entries(extra)) { const [d, n] = k.split(':'); S[`${d}.${p}_bms_${n}`] = st(v, u); }
+    S[`number.${p}_bms_device_address`] = st(addr[p]);
+  }
   for (const p of Object.keys(per)) for (const row of settings.split(';')) {
     const [k, v, u] = row.split('|');
     S[`number.${p}_bms_${k}`] = st(v, u);

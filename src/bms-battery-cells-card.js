@@ -94,11 +94,30 @@ const JK_SETTINGS = [
   ['temp', 'Charge OTP / OTPR', 'charge_overtemperature_protection', 'charge_overtemperature_protection_recovery', 0],
   ['temp', 'Discharge OTP / OTPR', 'discharge_overtemperature_protection', 'discharge_overtemperature_protection_recovery', 0],
   ['temp', 'Charge UTP / UTPR', 'charge_undertemperature_protection', 'charge_undertemperature_protection_recovery', 0],
+  ['temp', 'Discharge UTP / UTPR', 'sensor:discharge_undertemperature_protection', 'sensor:discharge_undertemperature_protection_recovery', 0],
   ['temp', 'MOS OTP / OTPR', 'power_tube_overtemperature_protection', 'power_tube_overtemperature_protection_recovery', 0],
+  ['temp', 'TMP Start / Stop Heating', 'sensor:heating_start_temperature', 'sensor:heating_stop_temperature', 0],
   ['gen', 'Battery Capacity', 'total_battery_capacity_ah', null, 0],
   ['gen', 'Cell Count', 'cell_count', null, 0],
+  ['gen', 'Device Addr.', 'device_address', null, 0],
+  ['gen', 'Time Smart Sleep', 'sensor:smart_sleep_delay', null, 0],
+  ['gen', 'Dischrg. Pre. Chrg. T', 'sensor:precharge_time', null, 0],
+  ['gen', 'Battery Type', 'sensor:battery_type_text', null, null],
+  ['func', 'Charging Float Mode', 'switch:charging_floating_mode', null, 'bool'],
+  ['func', 'Smart Sleep On', 'switch:smart_sleep_switch', null, 'bool'],
+  ['func', 'Timed Stored Data', 'switch:timed_stored_data_switch', null, 'bool'],
+  ['func', 'Display Always On', 'switch:display_always_on_switch', null, 'bool'],
+  ['func', 'Disable Par-Limiter', 'switch:disable_pcl_module_switch', null, 'bool'],
+  ['func', 'Heating', 'binary_sensor:heating_switch', null, 'bool'],
+  ['func', 'Disable Temp. Sensor', 'binary_sensor:disable_temperature_sensors', null, 'bool'],
+  ['func', 'Discharge OCP 2', 'binary_sensor:discharge_ocp2', null, 'bool'],
+  ['func', 'Discharge OCP 3', 'binary_sensor:discharge_ocp3', null, 'bool'],
+  ['func', 'DRY ARM Intermittent', 'binary_sensor:dry_alarm_intermittent', null, 'bool'],
+  ['func', 'Special Charger', 'binary_sensor:special_charger', null, 'bool'],
 ];
-const JK_SETTING_ID = 'number.{p}_bms_{k}';
+const JK_SETTING_ID = '{d}.{p}_bms_{k}';
+// In der JK-App einstellbar, vom Add-on aber nicht nach Home Assistant übertragen
+const JK_APP_ONLY = ['RCV Time', 'Re-Bulk SOC', 'Calibrating Volt./Curr.', 'Emerg. Time', 'Data Stored Period', 'UART1–3 / CAN Protocol', 'LCD Buzzer', 'DRY 1 / DRY 2', 'Con. Wire Res.', 'GPS Locked CHG/DCH'];
 
 const JK_TEMPS = ['temp_entity', 'temp_2_entity', 'temp_3_entity', 'temp_4_entity', 'temp_5_entity'];
 const JK_CELL = "sensor.{p}_bms_cell_{i}_volt";
@@ -589,7 +608,7 @@ class BmsBatteryCellsCard extends HTMLElement {
             this._config.cells = cells;
         }
         // BMS-Einstellungen: nur die Einträge, deren Entität es gibt
-        const sid = (k) => k ? fill(JK_SETTING_ID).replace('{k}', k) : null;
+        const sid = (k) => { if (!k) return null; const [d, n] = k.includes(':') ? k.split(':') : ['number', k]; return fill(JK_SETTING_ID).replace('{d}', d).replace('{k}', n); };
         this._jkSettings = JK_SETTINGS.map(([group, label, k1, k2, dec], i) => ({
             group, label, dec, idx: i,
             a: states[sid(k1)] ? sid(k1) : null,
@@ -603,7 +622,7 @@ class BmsBatteryCellsCard extends HTMLElement {
     }
 
     _renderJkSettingsHtml() {
-        const groups = [['volt', 'card.set_volt'], ['bal', 'card.set_bal'], ['cur', 'card.set_cur'], ['temp', 'card.set_temp'], ['gen', 'card.set_gen']];
+        const groups = [['volt', 'card.set_volt'], ['bal', 'card.set_bal'], ['cur', 'card.set_cur'], ['temp', 'card.set_temp'], ['gen', 'card.set_gen'], ['func', 'card.set_func']];
         const body = groups.map(([g, key]) => {
             const rows = this._jkSettings.filter(s => s.group === g);
             if (!rows.length) return '';
@@ -613,17 +632,27 @@ class BmsBatteryCellsCard extends HTMLElement {
         return `<details class="box jk-settings" ${this._config.jk_settings_open ? 'open' : ''}>
             <summary><ha-icon icon="mdi:tune-vertical"></ha-icon><span>${this._localize('card.bms_settings')}</span><span class="jk-set-hint">${this._localize('card.bms_settings_hint')}</span></summary>
             <div class="jk-set-grid">${body}</div>
+            <div class="jk-set-apponly">${this._localize('card.set_app_only')}: ${JK_APP_ONLY.join(', ')}</div>
         </details>`;
     }
 
     _updateJkSettings() {
         const fmt = (id, dec) => {
+            if (dec === null) { const s = this._getState(id); return s && !['unknown', 'unavailable'].includes(s) ? String(s) : '--'; }
             const v = this._parseNumber(id);
             return v === null ? '--' : v.toFixed(dec);
         };
         this._jkSettings.forEach(s => {
             const el = this.shadowRoot.getElementById(`jk-set-${s.idx}`);
             if (!el) return;
+            if (s.dec === 'bool') {
+                const st = String(this._getState(s.a) || '').toLowerCase();
+                const on = st === 'on';
+                const out = ['on', 'off'].includes(st) ? this._localize(on ? 'card.on' : 'card.off') : '--';
+                if (el.innerText !== out) el.innerText = out;
+                el.style.color = on ? '#43a047' : '';
+                return;
+            }
             const unit = this._getUnit(s.a);
             const txt = s.b ? `${fmt(s.a, s.dec)} / ${fmt(s.b, s.dec)}` : fmt(s.a, s.dec);
             const out = `${txt}${unit ? ' ' + unit : ''}`;
@@ -1556,6 +1585,7 @@ class BmsBatteryCellsCard extends HTMLElement {
                 .jk-set-head { font-size: 0.72rem; text-transform: uppercase; letter-spacing: .5px; color: var(--secondary-text-color); margin: 6px 0 2px; }
                 .jk-set-row { display: flex; justify-content: space-between; gap: 8px; font-size: 0.85rem; padding: 2px 0; border-bottom: 1px dashed rgba(127,127,127,.2); }
                 .jk-set-val { font-weight: 600; white-space: nowrap; }
+                .jk-set-apponly { padding: 0 14px 12px; font-size: 0.75rem; color: var(--secondary-text-color); }
                 @media (max-width: 500px) { .jk-set-grid { grid-template-columns: 1fr; } }
                 .jk-phase { flex-direction: row; justify-content: center; gap: 10px; }
                 .jk-info { display: flex; flex-wrap: wrap; gap: 6px 8px; justify-content: center; align-items: center; }

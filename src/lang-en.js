@@ -85,6 +85,8 @@ export default {
         val_off: "Value for OFF (e.g. 'OFF' or 'False')"
     },
     card: {
+        set_func: "Functions",
+        set_app_only: "Only in the JK app (not sent by the add-on)",
         bms_settings: "BMS settings",
         bms_settings_hint: "read from BMS, change in JK app",
         set_volt: "Cell voltages",
