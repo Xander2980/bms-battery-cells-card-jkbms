@@ -40,6 +40,10 @@ Ansicht mit drei parallelen JK-BMS (Master, BMS 1, BMS 2): je Spalte oben die De
 
 Die Bilder werden aus `dist/` erzeugt: `npm install` und `npm run screenshots` (Werte in `tools/screenshots/data.mjs`, braucht Chrome/Chromium). Nach jeder Änderung an der Karte neu erzeugen.
 
+**BMS-Einstellungen (aufgeklappt)** – unten in der Detailansicht, mit einem Tipp auf „BMS-Einstellungen“ auf- und zuklappen:
+
+<img width="60%" alt="BMS-Einstellungen aufgeklappt" src="jk-einstellungen-offen.png" />
+
 ### Beispiel
 
 ```yaml

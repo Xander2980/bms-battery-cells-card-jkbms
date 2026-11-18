@@ -46,6 +46,7 @@ const shots = [
   { file: 'jk-detailansicht.png', states: buildStates(), cards: [detail('bms_master', 'Master BMS (JK)')] },
   { file: 'jk-alarm.png', states: buildStates({ alarmOn: 'bms_1', protectionOn: 'bms_1' }), cards: [detail('bms_1', 'BMS 1 (JK)')] },
   { file: 'jk-einstellungen.png', states: buildStates(), cards: [{ ...detail('bms_master', 'Master BMS (JK)'), show_charts: false, jk_settings_open: true }] },
+  { file: 'jk-einstellungen-offen.png', part: 'details.jk-settings', states: buildStates(), cards: [{ ...detail('bms_master', 'Master BMS (JK)'), show_charts: false, jk_settings_open: true }] },
   { file: 'jk-kompakt.png', states: buildStates(), cards: [compact('bms_master', 'Master BMS (JK)')] },
 ];
 
@@ -55,7 +56,7 @@ for (const s of shots) {
   await page.goto(url);
   await page.waitForFunction(() => window.renderCards);
   await page.evaluate((a) => window.renderCards(a), { cards: s.cards, states: s.states, columns: s.columns || 1, width: s.width || 500 });
-  await page.locator('#grid').screenshot({ path: path.join(root, 'docs', s.file) });
+  await page.locator(s.part || '#grid').first().screenshot({ path: path.join(root, 'docs', s.file) });
   console.log('docs/' + s.file);
   await page.close();
 }

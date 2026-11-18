@@ -97,7 +97,13 @@ Die Karte **zeigt** BMS-Werte nur an. Die Schutz- und Ladeeinstellungen (OVP, UV
 
 In der **Detailansicht** gibt es unten den Bereich **„BMS-Einstellungen“** (zum Aufklappen antippen). Er zeigt alle Einstellwerte mit den Namen aus der JK-App – so sieht man nach einer Änderung in der App sofort, ob der Wert im BMS angekommen ist. Mit `jk_settings_open: true` ist er gleich aufgeklappt, mit `show_jk_settings: false` ausgeblendet.
 
-<img width="48%" alt="BMS-Einstellungen auf der Karte" src="jk-einstellungen.png" />
+Aufgeklappt sieht der Bereich so aus:
+
+<img width="60%" alt="BMS-Einstellungen aufgeklappt" src="jk-einstellungen-offen.png" />
+
+Ganze Detailkarte mit aufgeklapptem Bereich:
+
+<img width="48%" alt="Detailkarte mit BMS-Einstellungen" src="jk-einstellungen.png" />
 
 ### In Home Assistant ansehen
 
