@@ -125,7 +125,7 @@ var de = {
         max_res: "Max. Widerstand",
         default_title: "Batterie Zellen",
         power: "Leistung",
-        soc: "Batteriestand",
+        soc: "SOC",
         temp: "Temp",
         delta: "Delta",
         avg_cell: "Ø Zelle",
@@ -585,7 +585,7 @@ const css = LitElement.prototype.css;
 // JK-BMS-Fork: eigener Elementname, damit die Original-Karte parallel installiert bleiben kann
 const CARD_TAG = "bms-battery-cells-card-jkbms";
 const EDITOR_TAG = "bms-battery-cells-card-jkbms-editor";
-const CARD_VERSION = "v_2.1-jk.3";
+const CARD_VERSION = "v_2.1-jk.4";
 
 // Entitäten-Schema des JK-BMS-RS485-Add-ons (Fork Xander2980/jkbms-rs485-addon ab 4.2, Original jean-luc1203),
 // Präfix z. B. "bms_master". "{p}" = Präfix. Selbst konfigurierte Werte haben immer Vorrang.

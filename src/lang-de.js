@@ -125,7 +125,7 @@ export default {
         max_res: "Max. Widerstand",
         default_title: "Batterie Zellen",
         power: "Leistung",
-        soc: "Batteriestand",
+        soc: "SOC",
         temp: "Temp",
         delta: "Delta",
         avg_cell: "Ø Zelle",
