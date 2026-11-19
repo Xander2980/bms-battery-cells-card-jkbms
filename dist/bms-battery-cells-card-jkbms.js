@@ -585,7 +585,7 @@ const css = LitElement.prototype.css;
 // JK-BMS-Fork: eigener Elementname, damit die Original-Karte parallel installiert bleiben kann
 const CARD_TAG = "bms-battery-cells-card-jkbms";
 const EDITOR_TAG = "bms-battery-cells-card-jkbms-editor";
-const CARD_VERSION = "v_2.1-jk.5";
+const CARD_VERSION = "v_2.1-jk.6";
 
 // Entitäten-Schema des JK-BMS-RS485-Add-ons (Fork Xander2980/jkbms-rs485-addon ab 4.2, Original jean-luc1203),
 // Präfix z. B. "bms_master". "{p}" = Präfix. Selbst konfigurierte Werte haben immer Vorrang.
@@ -1679,9 +1679,17 @@ class BmsBatteryCellsCard extends HTMLElement {
                 .cell-val-badge.cell-voltage { background: var(--badge-bg-color); color: #fff; padding: 4px 10px; font-size: 13px; border-radius: 12px; font-weight: 700; letter-spacing: 0.5px; box-shadow: 0 2px 4px rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); display: var(--val-display); white-space: nowrap; }
                 .legend-col { display: flex; flex-direction: var(--legend-direction); justify-content: var(--legend-align); ${horizontal_layout ? 'width: 100%; height: 20px; border-top: var(--legend-border-top); padding-top: 2px;' : 'height: 100%; padding-right: 8px; margin-right: 4px; border-right: var(--legend-border); min-width: 40px;'} font-size: 11px; color: var(--secondary-text-color); text-align: right; font-weight: 500; }
                 ha-icon { --mdc-icon-size: 20px; }
-                @media (max-width: 480px) {
-                    .header.card-header { grid-template-areas: "title stats" "none subinfo"; grid-template-rows: auto auto; }
-                    .sub-info-row { justify-content: flex-end; margin-top: 4px; }
+                ha-card { container-type: inline-size; }
+                /* Schmale Karte (z. B. 3 Spalten): Titel oben, Spannung/Strom/Temp darunter, Werte als gleich breite Kacheln in einer Reihe */
+                @container (max-width: 620px) {
+                    .header.card-header { grid-template-areas: "title" "subinfo" "stats"; grid-template-columns: minmax(0, 1fr); row-gap: 8px; }
+                    .title { margin-top: 0; }
+                    .sub-info-row { justify-content: flex-start; margin-top: 0; font-size: 1rem; }
+                    .stats { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 6px; justify-content: stretch; }
+                    .stat-item { align-items: center; text-align: center; background: rgba(var(--rgb-primary-text-color, 127,127,127), 0.05); border-radius: 10px; padding: 6px 4px; min-width: 0; }
+                    .stat-label { margin-bottom: 2px; font-size: 0.68rem; }
+                    .stat-value-row, .stat-value-row.vertical-layout { flex-direction: row; gap: 3px; font-size: 1rem; align-items: center; }
+                    .stat-value-row ha-icon { --mdc-icon-size: 16px; }
                 }
             </style>
         `;
