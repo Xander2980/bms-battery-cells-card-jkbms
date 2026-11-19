@@ -585,7 +585,7 @@ const css = LitElement.prototype.css;
 // JK-BMS-Fork: eigener Elementname, damit die Original-Karte parallel installiert bleiben kann
 const CARD_TAG = "bms-battery-cells-card-jkbms";
 const EDITOR_TAG = "bms-battery-cells-card-jkbms-editor";
-const CARD_VERSION = "v_2.1-jk.4";
+const CARD_VERSION = "v_2.1-jk.5";
 
 // Entitäten-Schema des JK-BMS-RS485-Add-ons (Fork Xander2980/jkbms-rs485-addon ab 4.2, Original jean-luc1203),
 // Präfix z. B. "bms_master". "{p}" = Präfix. Selbst konfigurierte Werte haben immer Vorrang.
@@ -2171,7 +2171,9 @@ class BmsBatteryCellsCard extends HTMLElement {
                 .jk-set-apponly { padding: 0 14px 12px; font-size: 0.75rem; color: var(--secondary-text-color); }
                 @media (max-width: 500px) { .jk-set-grid { grid-template-columns: 1fr; } }
                 .jk-phase { flex-direction: row; justify-content: center; gap: 10px; }
-                .jk-info { display: flex; flex-wrap: wrap; gap: 6px 8px; justify-content: center; align-items: center; }
+                .jk-info { display: flex; flex-wrap: nowrap; gap: 6px; justify-content: center; align-items: center; min-width: 0; }
+                .jk-info .jk-chip { white-space: nowrap; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+                .jk-info .jk-chip.icon-only { flex: none; padding: 3px 7px; }
                 .jk-chip { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 12px; font-size: 0.85rem; background: rgba(var(--rgb-primary-text-color), 0.05); cursor: pointer; }
                 .jk-chip ha-icon { --mdc-icon-size: 16px; }
                 .jk-chip .jk-lbl { font-size: 0.7rem; color: var(--secondary-text-color); text-transform: uppercase; letter-spacing: 0.4px; }
@@ -2326,9 +2328,9 @@ class BmsBatteryCellsCard extends HTMLElement {
         const phase = (c.charge_status_entity || c.charger_entity || c.precharge_entity || c.balancer_status_entity) ? `
             <div class="jk-info" id="jk-info">
                 ${c.charge_status_entity ? `<span class="jk-chip clickable" id="jk-phase-chip" data-entity="${c.charge_status_entity}"><span class="jk-lbl">${this._localize('card.charge_phase')}</span> <b id="jk-phase">--</b></span>` : ''}
-                ${c.balancer_status_entity ? `<span class="jk-chip warn clickable" id="jk-chip-balancer" data-entity="${c.balancer_status_entity}"><ha-icon icon="mdi:scale-balance"></ha-icon><span id="jk-balancer-txt"></span></span>` : ''}
-                ${c.charger_entity ? `<span class="jk-chip ok clickable" id="jk-chip-charger" data-entity="${c.charger_entity}"><ha-icon icon="mdi:power-plug"></ha-icon>${this._localize('card.charger')}</span>` : ''}
-                ${c.precharge_entity ? `<span class="jk-chip ok clickable" id="jk-chip-precharge" data-entity="${c.precharge_entity}"><ha-icon icon="mdi:flash"></ha-icon>${this._localize('card.precharge')}</span>` : ''}
+                ${c.balancer_status_entity ? `<span class="jk-chip warn clickable icon-only" id="jk-chip-balancer" data-entity="${c.balancer_status_entity}"><ha-icon icon="mdi:scale-balance"></ha-icon></span>` : ''}
+                ${c.charger_entity ? `<span class="jk-chip ok clickable icon-only" id="jk-chip-charger" data-entity="${c.charger_entity}" title="${this._localize('card.charger')}"><ha-icon icon="mdi:power-plug"></ha-icon></span>` : ''}
+                ${c.precharge_entity ? `<span class="jk-chip ok clickable icon-only" id="jk-chip-precharge" data-entity="${c.precharge_entity}" title="${this._localize('card.precharge')}"><ha-icon icon="mdi:flash"></ha-icon></span>` : ''}
             </div>` : '';
         const tempPills = temps.map((k, i) => `
             <div class="jk-pill clickable" data-entity="${c[k]}">
@@ -2399,8 +2401,8 @@ class BmsBatteryCellsCard extends HTMLElement {
         show('jk-chip-precharge', isOn('precharge_entity'));
         const balTxt = this._jkBalancerText();
         show('jk-chip-balancer', !!balTxt);
-        const bt = root.getElementById('jk-balancer-txt');
-        if (bt) bt.innerText = balTxt || '';
+        const bc = root.getElementById('jk-chip-balancer');
+        if (bc) bc.title = balTxt || '';
         const info = root.getElementById('jk-info');
         if (info) info.style.display = [...info.children].some(ch => ch.style.display !== 'none') ? '' : 'none';
         JK_TEMPS.forEach(k => {
