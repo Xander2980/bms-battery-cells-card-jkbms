@@ -8,6 +8,8 @@ on:
       - 'src/**'
       - 'package.json'
       - 'rollup.config.mjs'
+  # Manuell startbar, falls ein Push den Build nicht auslöst
+  workflow_dispatch:
 
 jobs:
   build:
