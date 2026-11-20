@@ -73,6 +73,7 @@ export default {
         show_title_in_detail: "Show card title",
         show_status: "Show overall status (charging / discharging / balancing / idle)",
         balance_led: "Show balancing as LED instead of text",
+        confirm_toggle: "Ask before switching (charge / discharge / balancer / heater)",
         cell_resistance_entity: "Resistance Entity (opt.)",
         stat_heater: "Heater (Switch/Input Boolean/Select)",
 
@@ -129,6 +130,9 @@ export default {
         temp: "Temp",
         delta: "Delta",
         avg_cell: "Ø Cell",
+        cell_bal_on: "bal. on",
+        cell_bal_off: "bal. off",
+        confirm_toggle: "Really switch \"{name}\"?",
         
         // Detailed View Labels
         batt_voltage: "Battery Voltage",

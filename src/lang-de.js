@@ -73,6 +73,7 @@ export default {
         show_title_in_detail: "Titel der Karte anzeigen",
         show_status: "Gesamtstatus anzeigen (Laden / Entladen / Balancing / Leerlauf)",
         balance_led: "Balancing als LED statt Text anzeigen",
+        confirm_toggle: "Vor dem Schalten nachfragen (Laden / Entladen / Balancer / Heizung)",
         cell_resistance_entity: "Widerstand Sensor (opt.)",
         stat_heater: "Heizung (Switch/Input Boolean/Select)",
         
@@ -129,6 +130,9 @@ export default {
         temp: "Temp",
         delta: "Delta",
         avg_cell: "Ø Zelle",
+        cell_bal_on: "Bal. an",
+        cell_bal_off: "Bal. aus",
+        confirm_toggle: "„{name}“ wirklich schalten?",
 
         // Detailansicht Labels
         batt_voltage: "Batterie Spannung",

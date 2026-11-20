@@ -1,6 +1,6 @@
 {
   "name": "bms-battery-cells-card-jkbms",
-  "version": "2.1.0-jk.3",
+  "version": "2.1.0-jk.7",
   "description": "Home Assistant Lovelace-Karte f\u00fcr JK-BMS (Fork der BMS Battery Cells Card von jayjojayson)",
   "main": "index.js",
   "directories": {
@@ -17,7 +17,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "type": "commonjs",
   "bugs": {
     "url": "https://github.com/Xander2980/bms-battery-cells-card-jkbms/issues"

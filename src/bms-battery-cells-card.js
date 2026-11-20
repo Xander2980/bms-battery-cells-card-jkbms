@@ -12,7 +12,7 @@ const css = LitElement.prototype.css;
 // JK-BMS-Fork: eigener Elementname, damit die Original-Karte parallel installiert bleiben kann
 const CARD_TAG = "bms-battery-cells-card-jkbms";
 const EDITOR_TAG = "bms-battery-cells-card-jkbms-editor";
-const CARD_VERSION = "v_2.1-jk.6";
+const CARD_VERSION = "v_2.1-jk.7";
 
 // Entitäten-Schema des JK-BMS-RS485-Add-ons (Fork Xander2980/jkbms-rs485-addon ab 4.2, Original jean-luc1203),
 // Präfix z. B. "bms_master". "{p}" = Präfix. Selbst konfigurierte Werte haben immer Vorrang.
@@ -23,6 +23,8 @@ const JK_MAP = {
   watt_entity: ["sensor.{p}_bms_battery_power", "sensor.{p}_bms_puissance_totale"],
   total_voltage_entity: "sensor.{p}_bms_tension_totale_volt",
   total_current_entity: "sensor.{p}_bms_courant_total",
+  // Zell-Delta direkt vom Add-on (sonst lädt die Karte den Verlauf aller Zellen und rechnet selbst)
+  cell_diff_sensor: "sensor.{p}_bms_cell_voltage_delta",
   temp_entity: "sensor.{p}_bms_sonde_1_temp",
   temp_2_entity: "sensor.{p}_bms_sonde_2_temp",
   temp_3_entity: "sensor.{p}_bms_sonde_3_temp",
@@ -443,6 +445,7 @@ class BmsBatteryCellsCardEditor extends LitElement {
             ${this._renderSwitch('editor.show_title_in_detail', 'show_title_in_detail', true)}
             ${this._renderSwitch('editor.show_status', 'show_status')}
             ${this._renderSwitch('editor.balance_led', 'balance_led')}
+            ${this._renderSwitch('editor.confirm_toggle', 'confirm_toggle', true)}
           ` : ''}
 
           ${showBarOptions ? html`
@@ -599,13 +602,23 @@ class BmsBatteryCellsCard extends HTMLElement {
         const raw = this._rawConfig || {};
         const p = String(raw.jk_prefix || '').trim().toLowerCase();
         this._jkResolved = true;
+        this._jkPrefix = p;
+        this._jkUnsignedPower = false;
+        this._jkSignature = '';
+        this._jkSettings = [];
+        // Immer von der unaufgelösten Konfiguration ausgehen, damit ein erneuter Lauf nichts Altes behält
+        if (this._baseConfig) this._config = { ...this._baseConfig };
         if (!p || !this._hass) return;
         const states = this._hass.states;
+        this._jkStateCount = Object.keys(states).length;
         const fill = (tpl) => tpl.split('{p}').join(p);
         Object.entries(JK_MAP).forEach(([key, tpl]) => {
             if (raw[key]) return;                // selbst eingetragen -> Vorrang
-            const id = (Array.isArray(tpl) ? tpl : [tpl]).map(fill).find(x => states[x]);
+            const candidates = (Array.isArray(tpl) ? tpl : [tpl]).map(fill);
+            const id = candidates.find(x => states[x]);
             if (id) this._config[key] = id;
+            // Alte Add-on-Versionen liefern die Leistung ohne Vorzeichen -> Richtung aus dem Strom ableiten
+            if (key === 'watt_entity' && id && candidates.length > 1 && id !== candidates[0]) this._jkUnsignedPower = true;
         });
         if (!Array.isArray(raw.cells) || raw.cells.length === 0) {
             const cells = [];
@@ -625,6 +638,20 @@ class BmsBatteryCellsCard extends HTMLElement {
             b: k2 && states[sid(k2)] ? sid(k2) : null,
         })).filter(s => s.a);
         this._entityCache = null;
+        // Fingerabdruck der Auflösung: ändert er sich später, wird neu gerendert
+        this._jkSignature = JSON.stringify([
+            Object.keys(JK_MAP).map(k => this._config[k] || ''),
+            this._config.cells,
+            this._jkSettings.map(s => [s.a, s.b]),
+        ]);
+    }
+
+    // Leistung mit Vorzeichen (+ Laden / − Entladen), auch wenn das Add-on sie ohne Vorzeichen liefert
+    _readPower() {
+        const w = this._parseNumber(this._config.watt_entity);
+        if (w === null || !this._jkUnsignedPower) return w;
+        const i = this._parseNumber(this._config.total_current_entity);
+        return (i !== null && i < 0) ? -Math.abs(w) : w;
     }
 
     _jkSettingsEnabled() {
@@ -679,6 +706,13 @@ class BmsBatteryCellsCard extends HTMLElement {
         const oldHass = this._hass;
         this._hass = hass;
         if (!this._jkResolved) { this._resolveJk(); this._initialized = false; }
+        else if (this._jkPrefix && this._jkStateCount !== Object.keys(hass.states).length) {
+            // Es sind Entitäten dazugekommen oder weggefallen (Add-on gestartet, Discovery später):
+            // Präfix neu auflösen und nur neu aufbauen, wenn sich für diese Karte etwas geändert hat.
+            const before = this._jkSignature;
+            this._resolveJk();
+            if (this._jkSignature !== before) this._initialized = false;
+        }
         if (!this._initialized || (oldHass && oldHass.locale?.language !== hass.locale?.language)) {
             // Erstes Rendern oder Sprachwechsel (Beschriftungen/Titel stehen im HTML) -> neu aufbauen
             this._initRender();
@@ -744,6 +778,7 @@ class BmsBatteryCellsCard extends HTMLElement {
             ...config
         };
         if (!Array.isArray(this._config.cells)) this._config.cells = [];
+        this._baseConfig = { ...this._config };
         this._rawConfig = config;
         this._jkResolved = false;
         // Title explicitly set by the user (the default title is not shown in the detailed view)
@@ -833,7 +868,14 @@ class BmsBatteryCellsCard extends HTMLElement {
         if (!stateObj) return;
         
         const domain = entityId.split('.')[0];
-        
+
+        // Rückfrage vor dem Schalten: ein versehentlicher Tipp soll z. B. den Lade-/Entlade-MOSFET
+        // nicht umschalten. Abschaltbar mit confirm_toggle: false.
+        if (['switch', 'input_boolean', 'light', 'input_select', 'select'].includes(domain) && this._config.confirm_toggle !== false) {
+            const name = (stateObj.attributes && stateObj.attributes.friendly_name) || entityId;
+            if (!window.confirm(this._localize('card.confirm_toggle').replace('{name}', name))) return;
+        }
+
         // Handle switches, input_booleans, lights
         if (domain === 'switch' || domain === 'input_boolean' || domain === 'light') {
             this._hass.callService("homeassistant", "toggle", { entity_id: entityId });
@@ -1160,7 +1202,7 @@ class BmsBatteryCellsCard extends HTMLElement {
         
         const rowClass = show_values_on_top ? 'stat-value-row vertical-layout' : 'stat-value-row';
 
-        const wattVal = this._parseNumber(watt_entity);
+        const wattVal = this._readPower();
         const isCharging = (this._config.enable_animations !== false) && (wattVal !== null && wattVal > 0);
         const isDischarging = (this._config.enable_animations !== false) && (wattVal !== null && wattVal < 0);
         
@@ -1947,7 +1989,10 @@ class BmsBatteryCellsCard extends HTMLElement {
 
     _updateDetailedValues() {
         const c = this._config;
-        const setTxt = (id, val) => { const el = this.shadowRoot.getElementById(id); if(el) el.innerHTML = (val !== null && val !== undefined) ? val : '--'; };
+        // Nur schreiben, wenn sich der Inhalt geändert hat: die Karte wird bei jeder Zustandsänderung
+        // einer ihrer Entitäten aufgerufen, ein Neuaufbau des DOM ist dabei meist unnötig.
+        const setHtml = (el, html) => { if (el && el.__lastHtml !== html) { el.innerHTML = html; el.__lastHtml = html; } };
+        const setTxt = (id, val) => setHtml(this.shadowRoot.getElementById(id), String((val !== null && val !== undefined) ? val : '--'));
         const setStyle = (id, prop, val) => { const el = this.shadowRoot.getElementById(id); if(el) el.style[prop] = val; };
 
         // --- HELPER FUNCTION DEFINE FIRST ---
@@ -1963,7 +2008,7 @@ class BmsBatteryCellsCard extends HTMLElement {
 
         const vTotal = this._parseNumber(c.total_voltage_entity);
         const iTotal = this._parseNumber(c.total_current_entity);
-        const pTotal = this._parseNumber(c.watt_entity);
+        const pTotal = this._readPower();
         const delta  = this._parseNumber(c.cell_diff_sensor);
         const soc    = this._parseNumber(c.soc_entity);
         const soh    = this._parseNumber(c.soh_entity);
@@ -2041,8 +2086,8 @@ class BmsBatteryCellsCard extends HTMLElement {
 
         const leftEl = this.shadowRoot.getElementById('d-list-left');
         const rightEl = this.shadowRoot.getElementById('d-list-right');
-        if(leftEl) leftEl.innerHTML = leftList.join('');
-        if(rightEl) rightEl.innerHTML = rightList.join('');
+        setHtml(leftEl, leftList.join(''));
+        setHtml(rightEl, rightList.join(''));
 
         setTxt('d-total-volt', vTotal?.toFixed(2));
         setTxt('d-max-cell-val', maxV > 0 ? maxV.toFixed(3) : '--');
@@ -2054,8 +2099,8 @@ class BmsBatteryCellsCard extends HTMLElement {
         if (minCellEl && minIdx !== -1) { minCellEl.dataset.entity = c.cells[minIdx].entity; }
 
         setTxt('d-delta-val', deltaDisplay !== null ? Math.round(deltaDisplay) : '--');
-        setTxt('d-max-cell-idx', maxIdx !== -1 ? (c.cells[maxIdx].name || (maxIdx+1)) : '--');
-        setTxt('d-min-cell-idx', minIdx !== -1 ? (c.cells[minIdx].name || (minIdx+1)) : '--');
+        setTxt('d-max-cell-idx', maxIdx !== -1 ? this._esc(c.cells[maxIdx].name || (maxIdx+1)) : '--');
+        setTxt('d-min-cell-idx', minIdx !== -1 ? this._esc(c.cells[minIdx].name || (minIdx+1)) : '--');
         
         const stBal  = this._getState(c.stat_balance_entity);
 
@@ -2126,8 +2171,9 @@ class BmsBatteryCellsCard extends HTMLElement {
             if (showResistance) c.cells.forEach(cell => { if (cell.resistance_entity) { const m = this._formatResistance(cell.resistance_entity).mohm; if (m !== null && m > maxRes) maxRes = m; } });
             c.cells.forEach((cell, i) => {
                 const v = this._parseNumber(cell.entity);
-                if (v !== null) {
-                    const val = this._toVolts(cell.entity, v);
+                {
+                    // Zellen ohne Wert bleiben als Zeile mit "--" stehen (vorher verschwand die Zeile)
+                    const val = v !== null ? this._toVolts(cell.entity, v) : null;
                     const colIdx = i < Math.ceil(c.cells.length/2) ? 0 : 1;
                     
                     // --- HYBRID BALANCING LOGIC START ---
@@ -2140,11 +2186,11 @@ class BmsBatteryCellsCard extends HTMLElement {
                         isCellBalancing = isBalGlobal && (i === maxIdx || i === minIdx);
                     }
                     
-                    let balText = 'bal. off';
+                    let balText = this._localize('card.cell_bal_off');
                     let balStyle = '';
 
                     if (isCellBalancing) {
-                        balText = 'bal. on';
+                        balText = this._localize('card.cell_bal_on');
                         balStyle = 'color: #4caf50; font-weight: bold;';
                     }
 
@@ -2165,10 +2211,10 @@ class BmsBatteryCellsCard extends HTMLElement {
                         resHtml = `<span class="cell-res clickable ${isMax ? 'res-max' : ''}" ${cell.resistance_entity ? `data-entity="${cell.resistance_entity}"` : ''} ${isMax ? `title="${this._localize('card.max_res')}"` : ''}>${resStr}</span>`;
                     }
 
-                    cellListHtml[colIdx].push(`<div class="cell-text-row clickable" data-entity="${cell.entity}"><span><span class="cell-num">${String(i+1).padStart(2,'0')}.</span><span class="cell-v">${val.toFixed(3)} V</span></span>${resHtml}${balHtml}</div>`);
+                    cellListHtml[colIdx].push(`<div class="cell-text-row clickable" data-entity="${cell.entity}"><span><span class="cell-num">${String(i+1).padStart(2,'0')}.</span><span class="cell-v">${val !== null ? val.toFixed(3) + ' V' : '--'}</span></span>${resHtml}${balHtml}</div>`);
                 }
             });
-            listContainer.innerHTML = `<div class="cell-list-col">${cellListHtml[0].join('')}</div><div class="cell-list-col">${cellListHtml[1].join('')}</div>`;
+            setHtml(listContainer, `<div class="cell-list-col">${cellListHtml[0].join('')}</div><div class="cell-list-col">${cellListHtml[1].join('')}</div>`);
         }
         
         if (this._jkInfoEnabled()) this._updateJkBlock();
